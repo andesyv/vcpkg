@@ -30,11 +30,11 @@ else()
   set(ANGLE_BUILDSYSTEM_PORT "Linux")
 endif()
 
-# chromium/5414
-set(ANGLE_COMMIT aa63ea230e0c507e7b4b164a30e502fb17168c17)
-set(ANGLE_VERSION 5414)
-set(ANGLE_SHA512 a3b55d4b484e1e9ece515d60af1d47a80a0576b198d9a2397e4e68b16efd83468dcdfadc98dae57ff17f01d02d74526f8b59fdf00661b70a45b6dd266e5ffe38)
-set(ANGLE_THIRDPARTY_ZLIB_COMMIT 44d9b490c721abdb923d5c6c23ac211e45ffb1a5)
+# chromium/6070
+set(ANGLE_COMMIT cd6b265c262346dca0c236b9bcc99f403a43197c)
+set(ANGLE_VERSION 6070)
+set(ANGLE_SHA512 cc58e374877627d35d20ac9e8745725eb0b1545abc83c35078e907e9ca91b8583c33446801ca598690abde5a13934af41145ac7c5b99add822f52851fcd2b822)
+set(ANGLE_THIRDPARTY_ZLIB_COMMIT fef58692c1d7bec94c4ed3d030a45a1832a9615d)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
@@ -46,6 +46,7 @@ vcpkg_from_github(
         001-fix-uwp.patch
         002-fix-builder-error.patch
         003-fix-mingw.patch
+        004-fix-gni-to-cmake.patch
 )
 
 # Generate angle_commit.h
@@ -57,17 +58,17 @@ configure_file("${CMAKE_CURRENT_LIST_DIR}/angle_commit.h.in" "${SOURCE_PATH}/ang
 configure_file("${CMAKE_CURRENT_LIST_DIR}/angle_commit.h.in" "${SOURCE_PATH}/src/common/angle_commit.h" @ONLY)
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake" DESTINATION "${SOURCE_PATH}")
 
-set(ANGLE_WEBKIT_BUILDSYSTEM_COMMIT "bb1da00b9ba878d228a5e9834a0767dbca2fee43")
+set(ANGLE_WEBKIT_BUILDSYSTEM_COMMIT "3b928ce58d577d94a25fe6fba82be98a7638f3fb")
 
 # Download WebKit gni-to-cmake.py conversion script
 vcpkg_download_distfile(GNI_TO_CMAKE_PY
     URLS "https://github.com/WebKit/WebKit/raw/${ANGLE_WEBKIT_BUILDSYSTEM_COMMIT}/Source/ThirdParty/ANGLE/gni-to-cmake.py"
     FILENAME "gni-to-cmake.py"
-    SHA512 9da35caf2db2e849d6cc85721ba0b77eee06b6f65a7c5314fb80483db4949b0b6e9bf4b2d4fc63613665629b24e9b052e03fb1451b09313d881297771a4f2736
+    SHA512 fb56e23f6295dd5eacd4205285898a88b60b391b666745d67899578e56abda5ab00f1da92fe70bf5aa511842231cae567c15718cf7bf4ce923db29119225d109
 )
 
 # Generate CMake files from GN / GNI files
-vcpkg_find_acquire_program(PYTHON3)
+x_vcpkg_get_python_packages(PYTHON_VERSION "3" OUT_PYTHON_VAR "PYTHON3" PACKAGES ply)
 
 set(_root_gni_files_to_convert
   "compiler.gni Compiler.cmake"
@@ -113,16 +114,23 @@ configure_file("${WK_ANGLE_INCLUDE_CMAKELISTS}" "${SOURCE_PATH}/include/CMakeLis
 vcpkg_download_distfile(WK_ANGLE_CMAKE_WEBKITCOMPILERFLAGS
     URLS "https://github.com/WebKit/WebKit/raw/${ANGLE_WEBKIT_BUILDSYSTEM_COMMIT}/Source/cmake/WebKitCompilerFlags.cmake"
     FILENAME "WebKitCompilerFlags.cmake"
-    SHA512 63f981694ae37d4c4ca4c34e2bf62b4d4602b6a1a660851304fa7a6ee834fc58fa6730eeb41ef4e075550f3c8b675823d4d00bdcd72ca869c6d5ab11196b33bb
+    SHA512 dd1b826c12051e872bfbcafde6a5c7ad1c805cc3d0d86b13c9ea2705ec732ca8151d765f304965b949fc5d0dee66676e32cef5498881edb5d84fa18715faa0bb
 )
 file(COPY "${WK_ANGLE_CMAKE_WEBKITCOMPILERFLAGS}" DESTINATION "${SOURCE_PATH}/cmake")
 
 vcpkg_download_distfile(WK_ANGLE_CMAKE_WEBKITMACROS
     URLS "https://github.com/WebKit/WebKit/raw/${ANGLE_WEBKIT_BUILDSYSTEM_COMMIT}/Source/cmake/WebKitMacros.cmake"
     FILENAME "WebKitMacros.cmake"
-    SHA512 0d126b1d1b0ca995c2ea6e51c73326db363f560f3f07912ce58c7c022d9257d27b963dac56aee0e9604ca7a3d74c5aa9f0451c243fec922fb485dd2253685ab6
+    SHA512 2d6c38ca51f31e86c2bf68c74f8565e7248b7828ffaa94e91b665fe6e168dd202696e63b879372d1ccd7e9b9f143a2424dcbd37e6bd93a3ed6a8051834feddf0
 )
 file(COPY "${WK_ANGLE_CMAKE_WEBKITMACROS}" DESTINATION "${SOURCE_PATH}/cmake")
+
+vcpkg_download_distfile(WK_ANGLE_SHADER_PROGRAM_VERSION
+    URLS "https://github.com/WebKit/WebKit/raw/${ANGLE_WEBKIT_BUILDSYSTEM_COMMIT}/Source/ThirdParty/ANGLE/WebKit/ANGLEShaderProgramVersion.h"
+    FILENAME "ANGLEShaderProgramVersion.h"
+    SHA512 54987c82049fb5ca1d1cb7a3cac694f6077bc7e25af863ce4a4f64c37644e037b9ae4b5ed344b838e81a0ca60850a77b5438e931b820301931abb75008e7d6dd
+)
+file(COPY "${WK_ANGLE_SHADER_PROGRAM_VERSION}" DESTINATION "${SOURCE_PATH}/src")
 
 # Copy additional custom CMake buildsystem into appropriate folders
 file(GLOB MAIN_BUILDSYSTEM "${CMAKE_CURRENT_LIST_DIR}/cmake-buildsystem/CMakeLists.txt" "${CMAKE_CURRENT_LIST_DIR}/cmake-buildsystem/*.cmake")
@@ -132,7 +140,11 @@ file(COPY ${MODULES} DESTINATION "${SOURCE_PATH}/cmake")
 
 function(checkout_in_path PATH URL REF)
     if(EXISTS "${PATH}")
-        return()
+        file(GLOB files "${PATH}/*")
+        if(files)
+            return()
+        endif()
+        file(REMOVE_RECURSE "${PATH}")
     endif()
 
     vcpkg_from_git(

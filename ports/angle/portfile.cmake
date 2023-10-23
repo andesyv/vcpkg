@@ -116,21 +116,21 @@ vcpkg_download_distfile(WK_ANGLE_CMAKE_WEBKITCOMPILERFLAGS
     FILENAME "WebKitCompilerFlags.cmake"
     SHA512 dd1b826c12051e872bfbcafde6a5c7ad1c805cc3d0d86b13c9ea2705ec732ca8151d765f304965b949fc5d0dee66676e32cef5498881edb5d84fa18715faa0bb
 )
-file(COPY "${WK_ANGLE_CMAKE_WEBKITCOMPILERFLAGS}" DESTINATION "${SOURCE_PATH}/cmake")
+configure_file("${WK_ANGLE_CMAKE_WEBKITCOMPILERFLAGS}" "${SOURCE_PATH}/cmake/WebKitCompilerFlags.cmake" COPYONLY)
 
 vcpkg_download_distfile(WK_ANGLE_CMAKE_WEBKITMACROS
     URLS "https://github.com/WebKit/WebKit/raw/${ANGLE_WEBKIT_BUILDSYSTEM_COMMIT}/Source/cmake/WebKitMacros.cmake"
     FILENAME "WebKitMacros.cmake"
     SHA512 2d6c38ca51f31e86c2bf68c74f8565e7248b7828ffaa94e91b665fe6e168dd202696e63b879372d1ccd7e9b9f143a2424dcbd37e6bd93a3ed6a8051834feddf0
 )
-file(COPY "${WK_ANGLE_CMAKE_WEBKITMACROS}" DESTINATION "${SOURCE_PATH}/cmake")
+configure_file("${WK_ANGLE_CMAKE_WEBKITMACROS}" "${SOURCE_PATH}/cmake/WebKitMacros.cmake" COPYONLY)
 
 vcpkg_download_distfile(WK_ANGLE_SHADER_PROGRAM_VERSION
     URLS "https://github.com/WebKit/WebKit/raw/${ANGLE_WEBKIT_BUILDSYSTEM_COMMIT}/Source/ThirdParty/ANGLE/WebKit/ANGLEShaderProgramVersion.h"
     FILENAME "ANGLEShaderProgramVersion.h"
     SHA512 54987c82049fb5ca1d1cb7a3cac694f6077bc7e25af863ce4a4f64c37644e037b9ae4b5ed344b838e81a0ca60850a77b5438e931b820301931abb75008e7d6dd
 )
-file(COPY "${WK_ANGLE_SHADER_PROGRAM_VERSION}" DESTINATION "${SOURCE_PATH}/src")
+configure_file("${WK_ANGLE_SHADER_PROGRAM_VERSION}" "${SOURCE_PATH}/src/ANGLEShaderProgramVersion.h" COPYONLY)
 
 # Copy additional custom CMake buildsystem into appropriate folders
 file(GLOB MAIN_BUILDSYSTEM "${CMAKE_CURRENT_LIST_DIR}/cmake-buildsystem/CMakeLists.txt" "${CMAKE_CURRENT_LIST_DIR}/cmake-buildsystem/*.cmake")

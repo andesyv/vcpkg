@@ -1,7 +1,8 @@
 {
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "angle",
-  "version-string": "chromium_5414",
-  "port-version": 7,
+  "version-string": "chromium_6070",
+  "port-version": 1,
   "description": [
     "A conformant OpenGL ES implementation for Windows, Mac and Linux.",
     "The goal of ANGLE is to allow users of multiple operating systems to seamlessly run WebGL and other OpenGL ES content by translating OpenGL ES API calls to one of the hardware-supported APIs available for that platform. ANGLE currently provides translation from OpenGL ES 2.0 and 3.0 to desktop OpenGL, OpenGL ES, Direct3D 9, and Direct3D 11. Support for translation from OpenGL ES to Vulkan is underway, and future plans include compute shader support (ES 3.1) and MacOS support."
@@ -24,13 +25,55 @@
     },
     "opengl-registry",
     {
-      "name": "vcpkg-cmake",
+      "name": "vcpkg-gn",
       "host": true
+    },
+    "zlib",
+    {
+      "name": "vcpkg-get-python-packages",
+      "host": true
+    }
+  ],
+  "features": {
+    "opengl": {
+      "description": "Enable the OpenGL backend renderer (EGL_ANGLE_platform_angle_opengl)"
+    },
+    "opengles": {
+      "description": "Enable the OpenGL ES backend renderer (EGL_ANGLE_platform_angle_opengl)"
+    },
+    "vulkan": {
+      "description": "Enable the Vulkan backend renderer (EGL_ANGLE_platform_angle_vulkan)"
+    },
+    "direct3d9": {
+      "description": "Enable the Direct3D 9 backend renderer (EGL_ANGLE_platform_angle_d3d)",
+      "supports": "!osx"
+    },
+    "direct3d11": {
+      "description": "Enable the Direct3D 11 backend renderer (EGL_ANGLE_platform_angle_d3d)",
+      "supports": "!osx"
+    },
+    "metal": {
+      "description": "Enable the Metal backend renderer (EGL_ANGLE_platform_angle_metal)",
+      "supports": "!windows & !linux"
+    },
+    "null": {
+      "description": "Enable the null renderer which performs state tracking and validation but does not render any content (EGL_ANGLE_platform_angle_null)"
+    }
+  },
+  "default-features": [
+    "opengl",
+    "opengles",
+    {
+      "name": "direct3d9",
+      "platform": "windows & !uwp"
     },
     {
-      "name": "vcpkg-cmake-config",
-      "host": true
+      "name": "direct3d11",
+      "platform": "windows"
     },
-    "zlib"
+    {
+      "name": "metal",
+      "platform": "osx"
+    }
   ]
 }

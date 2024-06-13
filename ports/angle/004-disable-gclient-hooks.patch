@@ -1,0 +1,20 @@
+diff --git a/DEPS b/DEPS
+index 37c591b1a..63219b409 100644
+--- a/DEPS
++++ b/DEPS
+@@ -5044,15 +5044,6 @@ hooks = [
+     'condition': 'not build_with_chromium',
+   },
+ 
+-  {
+-    # Update LASTCHANGE.
+-    'name': 'lastchange',
+-    'pattern': '.',
+-    'condition': 'not build_with_chromium',
+-    'action': ['python3', 'build/util/lastchange.py',
+-               '-o', 'build/util/LASTCHANGE'],
+-  },
+-
+   # Pull rc binaries using checked-in hashes.
+   {
+     'name': 'rc_win',

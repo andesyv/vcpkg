@@ -560,11 +560,35 @@ endforeach()
 # Create package config file
 set(DEFINITIONS_DEBUG ${DEFINITIONS})
 set(DEFINITIONS_RELEASE ${DEFINITIONS})
-configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/share/${PORT}/unofficial-angle-config.cmake" @ONLY)
-vcpkg_cmake_config_fixup(PACKAGE_NAME unofficial-angle CONFIG_PATH "share/${PORT}")
+set(TARGET_INCLUDES_PREFIX_PATH "${CURRENT_PACKAGES_DIR}/include/angle")
+set(TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/lib")
+if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
+    set(TARGET_IMPORTED_LIBRARY_TYPE SHARED)
+    list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/bin")
+else()
+    set(TARGET_IMPORTED_LIBRARY_TYPE STATIC)
+endif()
+
+message(STATUS "Installing: ${CURRENT_PACKAGES_DIR}/share/unofficial-angle/unofficial-angle-config.cmake")
+configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/share/unofficial-angle/unofficial-angle-config.cmake" @ONLY)
+
+# vcpkg_cmake_config_fixup merges the debug and release version of our config script,
+# which we don't need. Luckily it only messes with INTERFACE_LINK_LIBRARIES so we
+# can get around this by using target_link_libraries instead and making a dummy copy
+# of the config script for the debug config script.
+set(TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/debug/lib")
+if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
+    list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/debug/bin")
+endif()
+message(STATUS "Installing: ${CURRENT_PACKAGES_DIR}/debug/share/unofficial-angle/unofficial-angle-config.cmake")
+configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/debug/share/unofficial-angle/unofficial-angle-config.cmake" @ONLY)
+
+# vcpkg_cmake_config_fixup(PACKAGE_NAME unofficial-angle CONFIG_PATH "share/${PORT}")
+vcpkg_cmake_config_fixup(PACKAGE_NAME unofficial-angle)
 
 
-vcpkg_copy_pdbs()
+
+# vcpkg_copy_pdbs()
 
 # file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 # # Remove empty directories inside include directory
@@ -583,6 +607,6 @@ vcpkg_copy_pdbs()
 
 # Copyright and usage
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
-# file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+# file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/unofficial-angle" RENAME copyright)
 # file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 configure_file("${CMAKE_CURRENT_LIST_DIR}/usage.in" "${CURRENT_PACKAGES_DIR}/share/${PORT}/usage" @ONLY)

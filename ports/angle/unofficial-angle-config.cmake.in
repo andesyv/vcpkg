@@ -1,5 +1,6 @@
 set(TARGET_INCLUDES_PREFIX_PATH @TARGET_INCLUDES_PREFIX_PATH@)
-set(TARGET_LIBRARY_PREFIX_PATHS @TARGET_LIBRARY_PREFIX_PATHS@)
+set(TARGET_LIBRARY_PREFIX_PATH @TARGET_LIBRARY_PREFIX_PATH@)
+set(TARGET_IMPORTED_LIBRARY_TYPE @TARGET_IMPORTED_LIBRARY_TYPE@)
 # "${CURRENT_INSTALLED_DIR}/$<$<CONFIG:DEBUG>:debug/>lib")
 # if(${DYNAMIC_LIBRARY})
 #     list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_INSTALLED_DIR}/$<$<CONFIG:DEBUG>:debug/>bin")
@@ -50,27 +51,160 @@ set(_LIBRARIES "libEGL" "libGLESv2")
 #         pmsample)
 # endif()
 
+function(find_shared_library OUT_VAR NAME PATHS)
+    if(WIN32)
+        SET(SHARED_LIBRARY_SUFFIXES ".dll")
+    else()
+        SET(SHARED_LIBRARY_SUFFIXES ".so" ".a")
+    endif()
+
+    foreach(EXT IN LISTS SHARED_LIBRARY_SUFFIXES)
+        list(APPEND NAMES_WITH_SUFFIXES "${NAME}${EXT}")
+    endforeach()
+
+    find_file(TEMP_VAR NAMES ${NAMES_WITH_SUFFIXES} PATHS ${PATHS})
+    set(${OUT_VAR} "${TEMP_VAR}" PARENT_SCOPE)
+    unset(TEMP_VAR CACHE)
+endfunction()
+
 foreach(LIB_NAME ${_LIBRARIES})
     if(TARGET unofficial::angle::${LIB_NAME})
         continue()
     endif()
 
-    message(STATUS "Searching for ${LIB_NAME} in ${TARGET_LIBRARY_PREFIX_PATHS}")
-    find_library(_LIB NAMES ${LIB_NAME} PATHS ${TARGET_LIBRARY_PREFIX_PATHS})
-    if(NOT _LIB)
-        message(WARNING "Link target ${LIB_NAME} was not found and was excluded from the package")
+    # Static release library
+    message(DEBUG "Searching for ${LIB_NAME} in ${TARGET_LIBRARY_PREFIX_PATH}/lib and ${TARGET_LIBRARY_PREFIX_PATH}/bin")
+    find_library(LIB_PATH_STATIC NAMES ${LIB_NAME} PATHS "${TARGET_LIBRARY_PREFIX_PATH}/lib")
+    if(NOT LIB_PATH_STATIC)
+        message(WARNING "Static library for target ${LIB_NAME} was not found and was excluded from the package")
         continue()
     endif()
 
-    add_library(unofficial::angle::${LIB_NAME} @TARGET_IMPORTED_LIBRARY_TYPE@ IMPORTED)
+    # Dynamic release library
+    if(${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
+        # find_library(LIB_PATH_SHARED NAMES ${LIB_NAME} PATHS "${TARGET_LIBRARY_PREFIX_PATH}/bin" NO_DEFAULT_PATH)
+        find_shared_library(LIB_PATH_SHARED ${LIB_NAME} "${TARGET_LIBRARY_PREFIX_PATH}/bin")
 
-    # set_target_properties(unofficial::angle::${LIB_NAME} PROPERTIES IMPORTED_LOCATION ${_LIB})
-    set_target_properties(unofficial::angle::${LIB_NAME} PROPERTIES INTERFACE_LINK_LIBRARIES ${_LIB})
+        if(NOT LIB_PATH_SHARED)
+            message(WARNING "Shared library for target ${LIB_NAME} was not found and was excluded from the package")
+            continue()
+        endif()
+
+        add_library(unofficial::angle::${LIB_NAME} SHARED IMPORTED)
+
+        set_target_properties(
+            unofficial::angle::${LIB_NAME} PROPERTIES
+            IMPORTED_LOCATION ${LIB_PATH_SHARED}
+            IMPORTED_IMPLIB ${LIB_PATH_STATIC}
+            IMPORTED_CONFIGURATIONS "RELEASE"
+        )
+    else()
+        add_library(unofficial::angle::${LIB_NAME} STATIC IMPORTED)
+
+        set_target_properties(
+
+            unofficial::angle::${LIB_NAME} PROPERTIES
+            IMPORTED_LOCATION ${LIB_PATH_STATIC}
+            IMPORTED_CONFIGURATIONS "RELEASE"
+        )
+    endif()
+
+    # set_target_properties(unofficial::angle::${LIB_NAME} PROPERTIES INTERFACE_LINK_LIBRARIES ${_LIB})
     target_include_directories(unofficial::angle::${LIB_NAME} INTERFACE ${TARGET_INCLUDES_PREFIX_PATH})
+
+    # Static debug library
+    message(DEBUG "Searching for ${LIB_NAME} in ${TARGET_LIBRARY_PREFIX_PATH}/debug/lib and ${TARGET_LIBRARY_PREFIX_PATH}/debug/bin")
+    find_library(LIB_DEBUG_PATH_STATIC NAMES ${LIB_NAME} PATHS "${TARGET_LIBRARY_PREFIX_PATH}/debug/lib")
+    if(NOT LIB_DEBUG_PATH_STATIC)
+        message(DEBUG "Static debug library was not found. Short-circuiting...")
+        continue()
+    endif()
+
+    # Dynamic debug library
+    if(${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
+        find_shared_library(LIB_DEBUG_PATH_SHARED ${LIB_NAME} "${TARGET_LIBRARY_PREFIX_PATH}/debug/bin")
+
+        if(NOT LIB_DEBUG_PATH_SHARED)
+            message(DEBUG "Dynamic debug library was not found. Short-circuiting...")
+            continue()
+        endif()
+
+        set_target_properties(
+            unofficial::angle::${LIB_NAME} PROPERTIES
+            IMPORTED_LOCATION_DEBUG ${LIB_DEBUG_PATH_SHARED}
+            IMPORTED_IMPLIB_DEBUG ${LIB_DEBUG_PATH_STATIC}
+            IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
+        )
+    else()
+        set_target_properties(
+            unofficial::angle::${LIB_NAME} PROPERTIES
+            IMPORTED_LOCATION_DEBUG ${LIB_DEBUG_PATH_STATIC}
+            IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
+        )
+    endif()
+
+    message(DEBUG "Target unofficial::angle::${LIB_NAME} has properties:")
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_LOCATION)
+    message(DEBUG "IMPORTED_LOCATION: ${TEMP_VAR}")
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_LOCATION_DEBUG)
+    message(DEBUG "IMPORTED_LOCATION_DEBUG: ${TEMP_VAR}")
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_IMPLIB)
+    message(DEBUG "IMPORTED_IMPLIB: ${TEMP_VAR}")
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_IMPLIB_DEBUG)
+    message(DEBUG "IMPORTED_IMPLIB_DEBUG: ${TEMP_VAR}")
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_CONFIGURATIONS)
+    message(DEBUG "IMPORTED_CONFIGURATIONS: ${TEMP_VAR}")
+    unset(TEMP_VAR)
     
     # target_link_libraries(unofficial-angle INTERFACE ${_LIB})
-    # unset(_LIB CACHE)
+    unset(LIB_NAME)
+    unset(LIB_PATH_STATIC CACHE)
+    unset(LIB_PATH_SHARED)
+    unset(LIB_DEBUG_PATH_STATIC CACHE)
+    unset(LIB_DEBUG_PATH_SHARED)
 endforeach()
 
 # libEGL depends on libGLESv2
-target_link_libraries(unofficial::angle::libEGL INTERFACE unofficial::angle::libGLESv2)
+add_dependencies(unofficial::angle::libEGL unofficial::angle::libGLESv2)
+
+# libEGL loads libGLESv2 dynamically on runtime which VCPKG obviously does not pick up on being
+# a dependency and won't automatically copy the DLL for. So do so manually here with this
+# complicated hack:
+if(VCPKG_APPLOCAL_DEPS AND ${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
+    get_target_property(libGLESv2_RUNTIME_DEPENDENCY unofficial::angle::libGLESv2 IMPORTED_LOCATION)
+    get_target_property(libGLESv2_RUNTIME_DEPENDENCY_DEBUG unofficial::angle::libGLESv2 IMPORTED_LOCATION_DEBUG)
+
+    get_filename_component(libGLESv2_RUNTIME_DEPENDENCY_FILENAME ${libGLESv2_RUNTIME_DEPENDENCY} NAME)
+
+    # Supporting multi-config generators
+    if(CMAKE_CONFIGURATION_TYPES)
+        set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>")
+    else()
+        set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+
+    if(libGLESv2_RUNTIME_DEPENDENCY_DEBUG)
+        get_filename_component(libGLESv2_RUNTIME_DEPENDENCY_DEBUG_FILENAME ${libGLESv2_RUNTIME_DEPENDENCY_DEBUG} NAME)
+
+        # "Copying $<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG},${libGLESv2_RUNTIME_DEPENDENCY}> to ${OUTPUT_DIR}/$<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG_FILENAME},${libGLESv2_RUNTIME_DEPENDENCY_FILENAME}>..."
+        add_custom_target(
+            libEGLadditionalRuntimeDeps
+            DEPENDS "$<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG},${libGLESv2_RUNTIME_DEPENDENCY}>"
+            COMMAND
+                ${CMAKE_COMMAND} -E copy
+                "$<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG},${libGLESv2_RUNTIME_DEPENDENCY}>"
+                "${OUTPUT_DIR}/$<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG_FILENAME},${libGLESv2_RUNTIME_DEPENDENCY_FILENAME}>"
+        )
+    else()
+        # "Copying ${libGLESv2_RUNTIME_DEPENDENCY} to ${OUTPUT_DIR}/${libGLESv2_RUNTIME_DEPENDENCY_FILENAME}..."
+        add_custom_target(
+            libEGLadditionalRuntimeDeps
+            DEPENDS ${libGLESv2_RUNTIME_DEPENDENCY}
+            COMMAND
+                ${CMAKE_COMMAND} -E copy
+                "${libGLESv2_RUNTIME_DEPENDENCY}"
+                "${OUTPUT_DIR}/${libGLESv2_RUNTIME_DEPENDENCY_FILENAME}"
+        )
+    endif()
+    add_dependencies(unofficial::angle::libEGL libEGLadditionalRuntimeDeps)
+endif()

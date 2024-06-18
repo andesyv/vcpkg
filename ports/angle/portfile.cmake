@@ -515,8 +515,8 @@ vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninj
 vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/build.ninja.d" "./args.gn " "")
 vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninja.d" "./args.gn " "")
 
-set (BUILD_TARGETS :libEGL :libGLESv2)
-set (LINK_TARGETS libEGL libGLESv2)
+set(BUILD_TARGETS :libEGL :libGLESv2)
+set(LINK_TARGETS libEGL libGLESv2)
 # if (USE_OPENGL_BACKEND)
 #     list(APPEND BUILD_TARGETS src/libANGLE/renderer/gl:angle_gl_backend)
 # endif ()
@@ -561,10 +561,9 @@ endforeach()
 set(DEFINITIONS_DEBUG ${DEFINITIONS})
 set(DEFINITIONS_RELEASE ${DEFINITIONS})
 set(TARGET_INCLUDES_PREFIX_PATH "${CURRENT_PACKAGES_DIR}/include/angle")
-set(TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/lib")
+set(TARGET_LIBRARY_PREFIX_PATH "${CURRENT_PACKAGES_DIR}")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
     set(TARGET_IMPORTED_LIBRARY_TYPE SHARED)
-    list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/bin")
 else()
     set(TARGET_IMPORTED_LIBRARY_TYPE STATIC)
 endif()
@@ -572,16 +571,19 @@ endif()
 message(STATUS "Installing: ${CURRENT_PACKAGES_DIR}/share/unofficial-angle/unofficial-angle-config.cmake")
 configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/share/unofficial-angle/unofficial-angle-config.cmake" @ONLY)
 
-# vcpkg_cmake_config_fixup merges the debug and release version of our config script,
-# which we don't need. Luckily it only messes with INTERFACE_LINK_LIBRARIES so we
-# can get around this by using target_link_libraries instead and making a dummy copy
-# of the config script for the debug config script.
-set(TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/debug/lib")
-if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
-    list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/debug/bin")
-endif()
-message(STATUS "Installing: ${CURRENT_PACKAGES_DIR}/debug/share/unofficial-angle/unofficial-angle-config.cmake")
-configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/debug/share/unofficial-angle/unofficial-angle-config.cmake" @ONLY)
+# We use vcpkg_cmake_config_fixup to calculate the correct prefix path. Unfortunately,
+# vcpkg_cmake_config_fixup currently also merges the debug and release version of our
+# config script, which we don't need. Luckily it only messes with INTERFACE_LINK_LIBRARIES
+# property so we can get around vcpkg_cmake_config_fixup's merging by using
+# other properties instead and making a dummy copy of the config script for the debug
+# config script.
+configure_file("${CURRENT_PACKAGES_DIR}/share/unofficial-angle/unofficial-angle-config.cmake" "${CURRENT_PACKAGES_DIR}/debug/share/unofficial-angle/unofficial-angle-config.cmake" COPYONLY)
+# set(TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/debug/lib")
+# if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
+#     list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_PACKAGES_DIR}/debug/bin")
+# endif()
+# message(STATUS "Installing: ${CURRENT_PACKAGES_DIR}/debug/share/unofficial-angle/unofficial-angle-config.cmake")
+# configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/debug/share/unofficial-angle/unofficial-angle-config.cmake" @ONLY)
 
 # vcpkg_cmake_config_fixup(PACKAGE_NAME unofficial-angle CONFIG_PATH "share/${PORT}")
 vcpkg_cmake_config_fixup(PACKAGE_NAME unofficial-angle)

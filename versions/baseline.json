@@ -3064,6 +3064,10 @@
       "baseline": "3.1.0",
       "port-version": 4
     },
+    "glesbinding": {
+      "baseline": "3.0.0",
+      "port-version": 0
+    },
     "glew": {
       "baseline": "2.2.0",
       "port-version": 3

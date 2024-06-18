@@ -1,0 +1,26 @@
+diff --git a/glesbinding-config.cmake b/glesbinding-config.cmake
+index 49338ab..7ff57da 100644
+--- a/glesbinding-config.cmake
++++ b/glesbinding-config.cmake
+@@ -34,20 +34,11 @@ endmacro()
+ 
+ # Try install location
+ set(MODULE_FOUND FALSE)
+-find_modules("cmake")
++find_modules(".")
+ 
+ if(MODULE_FOUND)
+     return()
+ endif()
+ 
+-# Try common build locations
+-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+-    find_modules("build-debug/cmake")
+-    find_modules("build/cmake")
+-else()
+-    find_modules("build/cmake")
+-    find_modules("build-debug/cmake")
+-endif()
+-
+ # Signal success/failure to CMake
+ set(glesbinding_FOUND ${MODULE_FOUND})

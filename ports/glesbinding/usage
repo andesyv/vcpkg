@@ -1,0 +1,4 @@
+The package glesbinding:@TARGET_TRIPLET@ provides CMake targets:
+
+    find_package(glesbinding CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glesbinding::glesbinding glesbinding::glesbinding-aux)

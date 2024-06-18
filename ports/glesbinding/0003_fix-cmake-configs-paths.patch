@@ -1,0 +1,49 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 193ece6..8ebc255 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -138,15 +138,15 @@ endif()
+ if(1)
+     # Install into the system (/usr/bin or /usr/local/bin)
+     set(INSTALL_ROOT      "share/${project}")       # /usr/[local]/share/<project>
+-    set(INSTALL_CMAKE     "share/${project}/cmake") # /usr/[local]/share/<project>/cmake
++    set(INSTALL_CMAKE     "share/${project}") # /usr/[local]/share/<project>/cmake
+     set(INSTALL_EXAMPLES  "share/${project}")       # /usr/[local]/share/<project>
+     set(INSTALL_DATA      "share/${project}")       # /usr/[local]/share/<project>
+     set(INSTALL_BIN       "bin")                    # /usr/[local]/bin
+     set(INSTALL_SHARED    "lib")                    # /usr/[local]/lib
+     set(INSTALL_LIB       "lib")                    # /usr/[local]/lib
+     set(INSTALL_INCLUDE   "include")                # /usr/[local]/include
+-    set(INSTALL_DOC       "share/doc/${project}")   # /usr/[local]/share/doc/<project>
+-    set(INSTALL_SHORTCUTS "share/applications")     # /usr/[local]/share/applications
++    set(INSTALL_DOC       "share/${project}/doc")   # /usr/[local]/share/doc/<project>
++    set(INSTALL_SHORTCUTS "share/${project}/applications")     # /usr/[local]/share/applications
+     set(INSTALL_ICONS     "share/pixmaps")          # /usr/[local]/share/pixmaps
+     set(INSTALL_INIT      "etc/init")              # /etc/init (upstart init scripts)
+ else()
+diff --git a/source/glesbinding-aux/CMakeLists.txt b/source/glesbinding-aux/CMakeLists.txt
+index b31f1d3..def8c4e 100644
+--- a/source/glesbinding-aux/CMakeLists.txt
++++ b/source/glesbinding-aux/CMakeLists.txt
+@@ -135,7 +135,7 @@ add_library(${target}
+ add_library(${META_PROJECT_NAME}::${target} ALIAS ${target})
+ 
+ # Export library for downstream projects
+-export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/cmake/${target}/${target}-export.cmake)
++export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/${target}-export.cmake)
+ 
+ # Create API export header
+ generate_export_header(${target}
+diff --git a/source/glesbinding/CMakeLists.txt b/source/glesbinding/CMakeLists.txt
+index 5c540ea..5cb4c63 100644
+--- a/source/glesbinding/CMakeLists.txt
++++ b/source/glesbinding/CMakeLists.txt
+@@ -169,7 +169,7 @@ add_library(${target}
+ add_library(${META_PROJECT_NAME}::${target} ALIAS ${target})
+ 
+ # Export library for downstream projects
+-export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/cmake/${target}/${target}-export.cmake)
++export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/${target}-export.cmake)
+ 
+ # Create API export header
+ generate_export_header(${target}

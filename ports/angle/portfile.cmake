@@ -515,7 +515,9 @@ vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninj
 vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/build.ninja.d" "./args.gn " "")
 vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninja.d" "./args.gn " "")
 
-set(BUILD_TARGETS :libEGL :libGLESv2)
+# Targets can be found after following https://github.com/google/angle/blob/main/doc/DevSetup.md by doing
+# gn ls <generated-build-folder>
+set(BUILD_TARGETS :libEGL :libGLESv2 third_party/zlib:zlib)
 set(LINK_TARGETS libEGL libGLESv2)
 # if (USE_OPENGL_BACKEND)
 #     list(APPEND BUILD_TARGETS src/libANGLE/renderer/gl:angle_gl_backend)

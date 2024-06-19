@@ -6,7 +6,7 @@ set(TARGET_IMPORTED_LIBRARY_TYPE @TARGET_IMPORTED_LIBRARY_TYPE@)
 #     list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_INSTALLED_DIR}/$<$<CONFIG:DEBUG>:debug/>bin")
 # endif()
 
-set(_LIBRARIES "libEGL" "libGLESv2")
+set(_LIBRARIES "libEGL" "libGLESv2" "third_party_zlib")
 
 # if(WIN32)
 #     list(APPEND LIBRARIES_
@@ -164,17 +164,20 @@ foreach(LIB_NAME ${_LIBRARIES})
     unset(LIB_DEBUG_PATH_SHARED)
 endforeach()
 
-# libEGL depends on libGLESv2
+
+# Transative dependencies
 add_dependencies(unofficial::angle::libEGL unofficial::angle::libGLESv2)
+add_dependencies(unofficial::angle::libGLESv2 unofficial::angle::third_party_zlib)
 
 # libEGL loads libGLESv2 dynamically on runtime which VCPKG obviously does not pick up on being
 # a dependency and won't automatically copy the DLL for. So do so manually here with this
 # complicated hack:
-if(VCPKG_APPLOCAL_DEPS AND ${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
-    get_target_property(libGLESv2_RUNTIME_DEPENDENCY unofficial::angle::libGLESv2 IMPORTED_LOCATION)
-    get_target_property(libGLESv2_RUNTIME_DEPENDENCY_DEBUG unofficial::angle::libGLESv2 IMPORTED_LOCATION_DEBUG)
 
-    get_filename_component(libGLESv2_RUNTIME_DEPENDENCY_FILENAME ${libGLESv2_RUNTIME_DEPENDENCY} NAME)
+function(add_custom_runtime_dependency_copy_target TARGET TARGET_DEPENDENCY GENERATED_TARGET_NAME)
+    get_target_property(DEPENDANT_TARGET_RUNTIME_DEPENDENCY ${TARGET_DEPENDENCY} IMPORTED_LOCATION)
+    get_target_property(DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG ${TARGET_DEPENDENCY} IMPORTED_LOCATION_DEBUG)
+
+    get_filename_component(DEPENDANT_TARGET_RUNTIME_DEPENDENCY_FILENAME ${DEPENDANT_TARGET_RUNTIME_DEPENDENCY} NAME)
 
     # Supporting multi-config generators
     if(CMAKE_CONFIGURATION_TYPES)
@@ -183,28 +186,35 @@ if(VCPKG_APPLOCAL_DEPS AND ${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
         set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
-    if(libGLESv2_RUNTIME_DEPENDENCY_DEBUG)
-        get_filename_component(libGLESv2_RUNTIME_DEPENDENCY_DEBUG_FILENAME ${libGLESv2_RUNTIME_DEPENDENCY_DEBUG} NAME)
+    if(DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG)
+        get_filename_component(DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG_FILENAME ${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG} NAME)
 
-        # "Copying $<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG},${libGLESv2_RUNTIME_DEPENDENCY}> to ${OUTPUT_DIR}/$<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG_FILENAME},${libGLESv2_RUNTIME_DEPENDENCY_FILENAME}>..."
+        # "Copying $<IF:$<CONFIG:DEBUG>,${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG},${DEPENDANT_TARGET_RUNTIME_DEPENDENCY}> to ${OUTPUT_DIR}/$<IF:$<CONFIG:DEBUG>,${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG_FILENAME},${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_FILENAME}>..."
         add_custom_target(
-            libEGLadditionalRuntimeDeps
-            DEPENDS "$<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG},${libGLESv2_RUNTIME_DEPENDENCY}>"
+            ${GENERATED_TARGET_NAME}
+            DEPENDS "$<IF:$<CONFIG:DEBUG>,${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG},${DEPENDANT_TARGET_RUNTIME_DEPENDENCY}>"
             COMMAND
                 ${CMAKE_COMMAND} -E copy
-                "$<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG},${libGLESv2_RUNTIME_DEPENDENCY}>"
-                "${OUTPUT_DIR}/$<IF:$<CONFIG:DEBUG>,${libGLESv2_RUNTIME_DEPENDENCY_DEBUG_FILENAME},${libGLESv2_RUNTIME_DEPENDENCY_FILENAME}>"
+                "$<IF:$<CONFIG:DEBUG>,${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG},${DEPENDANT_TARGET_RUNTIME_DEPENDENCY}>"
+                "${OUTPUT_DIR}/$<IF:$<CONFIG:DEBUG>,${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG_FILENAME},${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_FILENAME}>"
         )
+
+        message(DEBUG "Generated target ${GENERATED_TARGET_NAME} which will copy $<IF:$<CONFIG:DEBUG>,${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG},${DEPENDANT_TARGET_RUNTIME_DEPENDENCY}> to ${OUTPUT_DIR}/$<IF:$<CONFIG:DEBUG>,${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_DEBUG_FILENAME},${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_FILENAME}>")
     else()
-        # "Copying ${libGLESv2_RUNTIME_DEPENDENCY} to ${OUTPUT_DIR}/${libGLESv2_RUNTIME_DEPENDENCY_FILENAME}..."
+        # "Copying ${DEPENDANT_TARGET_RUNTIME_DEPENDENCY} to ${OUTPUT_DIR}/${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_FILENAME}..."
         add_custom_target(
-            libEGLadditionalRuntimeDeps
-            DEPENDS ${libGLESv2_RUNTIME_DEPENDENCY}
+            ${GENERATED_TARGET_NAME}
+            DEPENDS ${DEPENDANT_TARGET_RUNTIME_DEPENDENCY}
             COMMAND
                 ${CMAKE_COMMAND} -E copy
-                "${libGLESv2_RUNTIME_DEPENDENCY}"
-                "${OUTPUT_DIR}/${libGLESv2_RUNTIME_DEPENDENCY_FILENAME}"
+                "${DEPENDANT_TARGET_RUNTIME_DEPENDENCY}"
+                "${OUTPUT_DIR}/${DEPENDANT_TARGET_RUNTIME_DEPENDENCY_FILENAME}"
         )
     endif()
-    add_dependencies(unofficial::angle::libEGL libEGLadditionalRuntimeDeps)
+    add_dependencies(${TARGET} ${GENERATED_TARGET_NAME})
+endfunction()
+
+if(VCPKG_APPLOCAL_DEPS AND ${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
+    add_custom_runtime_dependency_copy_target(unofficial::angle::libEGL unofficial::angle::libGLESv2 libEGLAdditionalRuntimeDeps)
+    add_custom_runtime_dependency_copy_target(unofficial::angle::libGLESv2 unofficial::angle::third_party_zlib libGLESv2AdditionalRuntimeDeps)
 endif()

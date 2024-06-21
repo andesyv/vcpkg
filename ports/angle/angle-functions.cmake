@@ -19,11 +19,9 @@ endfunction()
 
 function(append_gn_option NAME ENABLED)
     if(${ENABLED})
-        string(APPEND GN_CONFIGURE_OPTIONS " ${NAME}=true")
-        # set(GN_CONFIGURE_OPTIONS "${GN_CONFIGURE_OPTIONS} ${NAME}=true" PARENT_SCOPE)
+        set(GN_CONFIGURE_OPTIONS "${GN_CONFIGURE_OPTIONS} ${NAME}=true" PARENT_SCOPE)
     else()
-        string(APPEND GN_CONFIGURE_OPTIONS " ${NAME}=false")
-        # set(GN_CONFIGURE_OPTIONS "${GN_CONFIGURE_OPTIONS} ${NAME}=false" PARENT_SCOPE)
+        set(GN_CONFIGURE_OPTIONS "${GN_CONFIGURE_OPTIONS} ${NAME}=false" PARENT_SCOPE)
     endif()
 endfunction()
 

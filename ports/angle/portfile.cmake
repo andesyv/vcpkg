@@ -241,6 +241,11 @@ vcpkg_execute_required_process(
 # Targets can be found after following https://github.com/google/angle/blob/main/doc/DevSetup.md by doing
 # gn ls <generated-build-folder>
 set(BUILD_TARGETS :libEGL :libGLESv2 third_party/zlib:zlib)
+if(VCPKG_TARGET_IS_WINDOWS AND USE_VULKAN_BACKEND)
+    # ANGLE on Windows dynamically loads vulkan-1.dll from the build folder (no clue about other platforms yet)
+    list(APPEND BUILD_TARGETS third_party/vulkan-loader/src:libvulkan)
+endif()
+
 
 append_gn_option(is_clang OFF)
 append_gn_option(build_with_chromium OFF)
@@ -288,13 +293,21 @@ foreach(_file ${INCLUDE_FILES})
 endforeach()
 
 # Create package config file
-set(TARGET_INCLUDES_PREFIX_PATH "${PACKAGES_INCLUDE_DIR}")
 set(TARGET_LIBRARY_PREFIX_PATH "${CURRENT_PACKAGES_DIR}")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
     set(TARGET_IMPORTED_LIBRARY_TYPE SHARED)
 else()
     set(TARGET_IMPORTED_LIBRARY_TYPE STATIC)
 endif()
+
+if(VCPKG_TARGET_IS_WINDOWS AND USE_VULKAN_BACKEND)
+    # ANGLE on Windows dynamically loads vulkan-1.dll from the build folder (no clue about other platforms yet)
+    set(ADDITIONAL_LIBRARY_TARGETS "vulkan-1")
+else()
+    set(ADDITIONAL_LIBRARY_TARGETS "")
+endif()
+
+
 
 message(STATUS "Installing: ${CURRENT_PACKAGES_DIR}/share/unofficial-angle/unofficial-angle-config.cmake")
 configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/share/unofficial-angle/unofficial-angle-config.cmake" @ONLY)

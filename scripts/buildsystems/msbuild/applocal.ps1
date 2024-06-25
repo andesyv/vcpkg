@@ -125,6 +125,7 @@ function resolve([string]$targetBinary) {
                 }
             }
             if (Test-Path function:\deployAzureKinectSensorSDK) { deployAzureKinectSensorSDK $targetBinaryDir "$g_install_root" "$_" }
+            if (Test-Path function:\deployAngle) { deployAngle $targetBinaryDir "$g_install_root" "$_" }
             resolve (Join-Path $baseTargetBinaryDir "$_")
         } elseif (Test-Path $targetItemFilePath) {
             Write-Verbose "  ${_}: $_ not found in $g_install_root; locally deployed"
@@ -157,6 +158,11 @@ if (Test-Path "$g_install_root\bin\magnum\magnumdeploy.ps1") {
 # Note: This is a hack to make Azure Kinect Sensor SDK work.
 if (Test-Path "$g_install_root\tools\azure-kinect-sensor-sdk\k4adeploy.ps1") {
     . "$g_install_root\tools\azure-kinect-sensor-sdk\k4adeploy.ps1"
+}
+
+# Note: This is a hack to make Angle work.
+if (Test-Path "$g_install_root\tools\unofficial-angle\angledeploy.ps1") {
+    . "$g_install_root\tools\unofficial-angle\angledeploy.ps1"
 }
 
 resolve($targetBinary)

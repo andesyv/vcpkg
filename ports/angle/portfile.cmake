@@ -1,7 +1,7 @@
 include("${CMAKE_CURRENT_LIST_DIR}/angle-functions.cmake")
 
 if(VCPKG_TARGET_IS_LINUX)
-    message(WARNING "Building with a gcc version less than 6.1 is not supported.")
+    message(WARNING "${PORT} currently only supports CLang on Linux")
     # Full list of dependencies is available through <angle source>/build/install-build-deps.py
     # TODO: Update list
     message(WARNING "${PORT} currently requires the following libraries from the system package manager:\n    libx11-dev\n    mesa-common-dev\n    libxi-dev\n    libxext-dev\n\nThese can be installed on Ubuntu systems via apt-get install libx11-dev mesa-common-dev libxi-dev libxext-dev.")
@@ -102,7 +102,7 @@ vcpkg_from_github(
 #    (py path/to/depot_tools/gclient.py recurse --no-progress -j1 powershell -Command parse-dep-info-for-current-directory.ps1)
 
 checkout_dependencies(
-    "build https://chromium.googlesource.com/chromium/src/build.git d6f058677a1198f6e24a5fb371beb6f052771dcf"
+    "build https://chromium.googlesource.com/chromium/src/build.git d6f058677a1198f6e24a5fb371beb6f052771dcf 005-disable-thin-archive-generation.patch"
     "buildtools https://chromium.googlesource.com/chromium/src/buildtools.git 94d7b86a83537f8a7db7dccb0bf885739f7a81aa"
     "testing https://chromium.googlesource.com/chromium/src/testing ab63c08c0e37d8af5bc3b59742424c26a1466589"
     "third_party/EGL-Registry/src https://chromium.googlesource.com/external/github.com/KhronosGroup/EGL-Registry 7dea2ed79187cd13f76183c4b9100159b9e3e071"
@@ -248,7 +248,14 @@ vcpkg_execute_required_process(
 
 # Targets can be found after following https://github.com/google/angle/blob/main/doc/DevSetup.md by doing
 # gn ls <generated-build-folder>
-set(BUILD_TARGETS :libEGL :libGLESv2 third_party/zlib:zlib)
+# TODO: Check if this logic applies to Windows
+if(VCPKG_TARGET_IS_WINDOWS OR VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
+    set(BUILD_TARGETS :libEGL :libGLESv2 third_party/zlib:zlib)
+    set(CONFIG_TARGET_LIBRARIES libEGL libGLESv2 third_party_zlib)
+else()
+    set(BUILD_TARGETS :libEGL_static :libGLESv2_static)
+    set(CONFIG_TARGET_LIBRARIES libEGL libGLESv2)
+endif()
 if(VCPKG_TARGET_IS_WINDOWS AND USE_VULKAN_BACKEND)
     # ANGLE on Windows dynamically loads vulkan-1.dll from the build folder (no clue about other platforms yet)
     list(APPEND BUILD_TARGETS third_party/vulkan-loader/src:libvulkan)
@@ -307,19 +314,20 @@ foreach(_file ${INCLUDE_FILES})
 endforeach()
 
 # Create package config file
-set(TARGET_LIBRARY_PREFIX_PATH "${CURRENT_PACKAGES_DIR}")
+set(CONFIG_TARGET_LIBRARY_PREFIX_PATH "${CURRENT_PACKAGES_DIR}")
 if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
-    set(TARGET_IMPORTED_LIBRARY_TYPE SHARED)
+    set(CONFIG_TARGET_IMPORTED_LIBRARY_TYPE SHARED)
 else()
-    set(TARGET_IMPORTED_LIBRARY_TYPE STATIC)
+    set(CONFIG_TARGET_IMPORTED_LIBRARY_TYPE STATIC)
 endif()
 
 if(VCPKG_TARGET_IS_WINDOWS AND USE_VULKAN_BACKEND)
     # ANGLE on Windows dynamically loads vulkan-1.dll from the build folder (no clue about other platforms yet)
-    set(ADDITIONAL_LIBRARY_TARGETS "vulkan-1")
-else()
-    set(ADDITIONAL_LIBRARY_TARGETS "")
+    list(APPEND CONFIG_TARGET_LIBRARIES vulkan-1)
 endif()
+
+set(EXPORTED_TARGET_NAMES libEGL libGLESv2)
+
 
 
 

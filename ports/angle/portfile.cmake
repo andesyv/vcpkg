@@ -298,6 +298,17 @@ vcpkg_gn_configure(
     OPTIONS_RELEASE "${GN_CONFIGURE_OPTIONS_RELEASE}"
 )
 
+if(VCPKG_LIBRARY_LINKAGE STREQUAL static)
+    # After configuring targets, we can query for additional dependent targets from the GN buildsystem
+    # (we don't have to reconfigure again because we know they will already be a part of the build files)
+    append_gn_dependent_targets(
+        TARGET ":libGLESv2_static"
+        SOURCE_PATH "${SOURCE_PATH}"
+        OUT_TARGET_LIST BUILD_TARGETS
+        OUT_LIBNAME_LIST CONFIG_TARGET_LIBRARIES
+    )
+endif()
+
 
 debug_message("Building ANGLE with targets: ${BUILD_TARGETS}")
 
@@ -325,8 +336,6 @@ if(VCPKG_TARGET_IS_WINDOWS AND USE_VULKAN_BACKEND)
     # ANGLE on Windows dynamically loads vulkan-1.dll from the build folder (no clue about other platforms yet)
     list(APPEND CONFIG_TARGET_LIBRARIES vulkan-1)
 endif()
-
-set(EXPORTED_TARGET_NAMES libEGL libGLESv2)
 
 
 

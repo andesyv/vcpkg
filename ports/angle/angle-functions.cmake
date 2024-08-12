@@ -61,3 +61,118 @@ function(fetch_angle_commit_id)
     endif()
     unset(COMMIT_ID_SCRIPT_CONTENT)
 endfunction()
+
+function(append_gn_dependent_targets)
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "TARGET;SOURCE_PATH;OUT_TARGET_LIST;OUT_LIBNAME_LIST" "")
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unparsed arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+
+    string(REGEX REPLACE "^(:|/)" "" target_identifier "${arg_TARGET}")
+    string(REPLACE "/" "_" target_identifier "${target_identifier}")
+
+    vcpkg_find_acquire_program(GN)
+
+    vcpkg_execute_required_process(
+        COMMAND "${GN}" desc --all --type=static_library "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg" "${arg_TARGET}" deps
+        WORKING_DIRECTORY "${arg_SOURCE_PATH}"
+        LOGNAME "gn-dependent-targets-${target_identifier}-${TARGET_TRIPLET}-dbg"
+    )
+
+    file(READ "${CURRENT_BUILDTREES_DIR}/gn-dependent-targets-${target_identifier}-${TARGET_TRIPLET}-dbg-out.log" output)
+    string(REGEX REPLACE "\n" ";" output "${output}")
+    foreach(target IN LISTS output)
+        if("${target}" STREQUAL "")
+            continue()
+        endif()
+        string(REGEX REPLACE "^/" "" target "${target}")
+        list(APPEND target_dependents_dbg "${target}")
+    endforeach()
+    list(SORT target_dependents_dbg)
+    
+
+    if(PORT_DEBUG)
+        vcpkg_execute_required_process(
+            COMMAND "${GN}" desc --all --type=static_library "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel" "${arg_TARGET}" deps
+            WORKING_DIRECTORY "${arg_SOURCE_PATH}"
+            LOGNAME "gn-dependent-targets-${target_identifier}-${TARGET_TRIPLET}-rel"
+        )
+
+        file(READ "${CURRENT_BUILDTREES_DIR}/gn-dependent-targets-${target_identifier}-${TARGET_TRIPLET}-rel-out.log" output)
+        string(REGEX REPLACE "\n" ";" output "${output}")
+        foreach(target IN LISTS output)
+            if("${target}" STREQUAL "")
+                continue()
+            endif()
+            string(REGEX REPLACE "^/" "" target "${target}")
+            list(APPEND target_dependents_rel "${target}")
+        endforeach()
+        list(SORT target_dependents_rel)
+    endif()
+
+    debug_message("target_dependents_dbg: ${target_dependents_dbg}")
+    if(PORT_DEBUG)
+        debug_message("target_dependents_rel: ${target_dependents_rel}")
+        if(NOT("${target_dependents_dbg}" STREQUAL "${target_dependents_rel}"))
+            message(WARNING "Debug and release dependent targets differ. Results might not be correct.")
+        endif()
+    endif()
+
+    list(APPEND "${arg_OUT_TARGET_LIST}" "${target_dependents_dbg}")
+    set("${arg_OUT_TARGET_LIST}" "${${arg_OUT_TARGET_LIST}}" PARENT_SCOPE)
+
+
+    vcpkg_execute_required_process(
+        COMMAND "${GN}" desc --all --type=static_library --as=output "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg" "${arg_TARGET}" deps
+        WORKING_DIRECTORY "${arg_SOURCE_PATH}"
+        LOGNAME "gn-dependent-target-outputs-${target_identifier}-${TARGET_TRIPLET}-dbg"
+    )
+
+    file(READ "${CURRENT_BUILDTREES_DIR}/gn-dependent-target-outputs-${target_identifier}-${TARGET_TRIPLET}-dbg-out.log" target_output_files_dbg)
+    string(REGEX REPLACE "\n" ";" target_output_files_dbg "${target_output_files_dbg}")
+    list(SORT target_output_files_dbg)
+
+    debug_message("target_output_files_dbg: ${target_output_files_dbg}")
+    foreach(output_file IN LISTS target_output_files_dbg)
+        debug_message("output_file: ${output_file}")
+        get_filename_component(output_filename "${output_file}" NAME_WE)
+        if(NOT("${output_filename}" STREQUAL ""))
+            list(APPEND target_outputs_dbg "${output_filename}")
+        endif()
+    endforeach()
+    list(SORT target_outputs_dbg)
+
+    if(PORT_DEBUG)
+        vcpkg_execute_required_process(
+            COMMAND "${GN}" desc --all --type=static_library --as=output "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel" "${arg_TARGET}" deps
+            WORKING_DIRECTORY "${arg_SOURCE_PATH}"
+            LOGNAME "gn-dependent-target-outputs-${target_identifier}-${TARGET_TRIPLET}-rel"
+        )
+
+        file(READ "${CURRENT_BUILDTREES_DIR}/gn-dependent-target-outputs-${target_identifier}-${TARGET_TRIPLET}-rel-out.log" target_output_files_rel)
+        string(REGEX REPLACE "\n" ";" target_output_files_rel "${target_output_files_rel}")
+
+        debug_message("target_output_files_rel: ${target_output_files_rel}")
+        foreach(output_file IN LISTS target_output_files_rel)
+            debug_message("output_file: ${output_file}")
+            get_filename_component(output_filename "${output_file}" NAME_WE)
+            if(NOT("${output_filename}" STREQUAL ""))
+                list(APPEND target_outputs_rel "${output_filename}")
+            endif()
+        endforeach()
+        list(SORT target_outputs_rel)
+    endif()
+
+    
+    debug_message("target_outputs_dbg: ${target_outputs_dbg}")
+    if(PORT_DEBUG)
+        debug_message("target_outputs_rel: ${target_outputs_rel}")
+        if(NOT("${target_outputs_dbg}" STREQUAL "${target_outputs_rel}"))
+            message(WARNING "Debug and release target outputs differ. Results might not be correct.")
+        endif()
+    endif()
+
+    # set("${arg_OUT_LIBNAME_LIST}" "${target_outputs_dbg}" PARENT_SCOPE)
+    list(APPEND "${arg_OUT_LIBNAME_LIST}" "${target_outputs_dbg}")
+    set("${arg_OUT_LIBNAME_LIST}" "${${arg_OUT_LIBNAME_LIST}}" PARENT_SCOPE)
+endfunction()

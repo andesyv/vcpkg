@@ -144,7 +144,12 @@ unset(CMAKE_FIND_LIBRARY_PREFIXES_OLD)
 
 
 # Transative dependencies
-add_dependencies(unofficial::angle::libEGL unofficial::angle::libGLESv2)
-if(TARGET unofficial::angle::third_party_zlib)
-    add_dependencies(unofficial::angle::libGLESv2 unofficial::angle::third_party_zlib)
-endif()
+target_link_libraries(unofficial::angle::libEGL INTERFACE unofficial::angle::libGLESv2)
+
+foreach(LIB_TARGET ${LIBRARY_TARGETS})
+    if(NOT (TARGET unofficial::angle::${LIB_TARGET}) OR "${LIB_TARGET}" STREQUAL "libEGL" OR "${LIB_TARGET}" STREQUAL "libGLESv2")
+        continue()
+    endif()
+
+    target_link_libraries(unofficial::angle::libGLESv2 INTERFACE unofficial::angle::${LIB_TARGET})
+endforeach()

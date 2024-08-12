@@ -1,62 +1,18 @@
 set(TARGET_INCLUDES_PREFIX_PATH @PACKAGES_INCLUDE_DIR@)
-set(TARGET_LIBRARY_PREFIX_PATH @TARGET_LIBRARY_PREFIX_PATH@)
-set(TARGET_IMPORTED_LIBRARY_TYPE @TARGET_IMPORTED_LIBRARY_TYPE@)
-# "${CURRENT_INSTALLED_DIR}/$<$<CONFIG:DEBUG>:debug/>lib")
-# if(${DYNAMIC_LIBRARY})
-#     list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_INSTALLED_DIR}/$<$<CONFIG:DEBUG>:debug/>bin")
-# endif()
+set(TARGET_LIBRARY_PREFIX_PATH @CONFIG_TARGET_LIBRARY_PREFIX_PATH@)
+set(TARGET_IMPORTED_LIBRARY_TYPE @CONFIG_TARGET_IMPORTED_LIBRARY_TYPE@)
 
-set(_LIBRARIES "libEGL" "libGLESv2" "third_party_zlib")
-list(APPEND _LIBRARIES @ADDITIONAL_LIBRARY_TARGETS@)
-
-# if(WIN32)
-#     list(APPEND LIBRARIES_
-#         cfgmgr32
-#         powrprof
-#         propsys
-#         setupapi
-#         userenv
-#         wbemuuid
-#         winmm
-#         advapi32
-#         comdlg32
-#         dbghelp
-#         dnsapi
-#         gdi32
-#         msimg32
-#         odbc32
-#         odbccp32
-#         oleaut32
-#         shell32
-#         shlwapi
-#         user32
-#         usp10
-#         uuid
-#         version
-#         wininet
-#         winspool
-#         ws2_32
-#         delayimp
-#         kernel32
-#         ole32)
-# elseif(APPLE)
-#     list(APPEND LIBRARIES_ 
-#         ApplicationServices
-#         AppKit
-#         CoreFoundation
-#         IOKit
-#         OpenDirectory
-#         Security
-#         bsm
-#         pmenergy
-#         pmsample)
-# endif()
+set(LIBRARY_TARGETS @CONFIG_TARGET_LIBRARIES@)
 
 function(find_shared_library OUT_VAR NAME PATHS)
     if(WIN32)
         SET(SHARED_LIBRARY_SUFFIXES ".dll")
+    elseif(LINUX)
+        SET(SHARED_LIBRARY_SUFFIXES ".so")
+    elseif(APPLE)
+        SET(SHARED_LIBRARY_SUFFIXES ".dylib")
     else()
-        SET(SHARED_LIBRARY_SUFFIXES ".so" ".a")
+        message(FATAL_ERROR "Unimplemented platform")
     endif()
 
     foreach(EXT IN LISTS SHARED_LIBRARY_SUFFIXES)
@@ -68,104 +24,127 @@ function(find_shared_library OUT_VAR NAME PATHS)
     unset(TEMP_VAR CACHE)
 endfunction()
 
-foreach(LIB_NAME ${_LIBRARIES})
-    if(TARGET unofficial::angle::${LIB_NAME})
+# ANGLE gets built with the lib prefix on all platforms, so prevent os-specific logic of CMAKE_FIND_LIBRARY_PREFIXES
+# by zeroing it
+set(CMAKE_FIND_LIBRARY_PREFIXES_OLD ${CMAKE_FIND_LIBRARY_PREFIXES})
+set(CMAKE_FIND_LIBRARY_PREFIXES "")
+
+foreach(LIB_TARGET ${LIBRARY_TARGETS})
+    if(TARGET unofficial::angle::${LIB_TARGET})
         continue()
     endif()
 
     # Static release library
-    message(DEBUG "Searching for ${LIB_NAME} in ${TARGET_LIBRARY_PREFIX_PATH}/lib and ${TARGET_LIBRARY_PREFIX_PATH}/bin")
-    find_library(LIB_PATH_STATIC NAMES ${LIB_NAME} PATHS "${TARGET_LIBRARY_PREFIX_PATH}/lib")
-    if(NOT LIB_PATH_STATIC)
-        message(WARNING "Static library for target ${LIB_NAME} was not found and was excluded from the package")
-        continue()
+    message(DEBUG "Searching for ${LIB_TARGET} and ${LIB_TARGET}_static in ${TARGET_LIBRARY_PREFIX_PATH}/lib and ${TARGET_LIBRARY_PREFIX_PATH}/bin")
+    # (Both Windows and Apple platforms use a static "loader" library for their shared libraries)
+    if(${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "STATIC" OR NOT LINUX)
+        find_library(LIB_PATH_STATIC NAMES "${LIB_TARGET}" "${LIB_TARGET}_static" PATHS "${TARGET_LIBRARY_PREFIX_PATH}/lib" NO_DEFAULT_PATH)
+        if(NOT LIB_PATH_STATIC)
+            message(WARNING "Static library for target ${LIB_TARGET} was not found and was excluded from the package")
+            continue()
+        endif()
     endif()
 
     # Dynamic release library
     if(${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
-        # find_library(LIB_PATH_SHARED NAMES ${LIB_NAME} PATHS "${TARGET_LIBRARY_PREFIX_PATH}/bin" NO_DEFAULT_PATH)
+        # find_library(LIB_PATH_SHARED NAMES ${LIB_TARGET} PATHS "${TARGET_LIBRARY_PREFIX_PATH}/bin" NO_DEFAULT_PATH)
         find_shared_library(LIB_PATH_SHARED ${LIB_NAME} "${TARGET_LIBRARY_PREFIX_PATH}/bin")
 
         if(NOT LIB_PATH_SHARED)
-            message(WARNING "Shared library for target ${LIB_NAME} was not found and was excluded from the package")
+            message(WARNING "Shared library for target ${LIB_TARGET} was not found and was excluded from the package")
             continue()
         endif()
 
-        add_library(unofficial::angle::${LIB_NAME} SHARED IMPORTED)
+        if(LINUX)
+            set(LIB_PATH_STATIC ${LIB_PATH_SHARED})
+        endif()
+
+        add_library(unofficial::angle::${LIB_TARGET} SHARED IMPORTED)
 
         set_target_properties(
-            unofficial::angle::${LIB_NAME} PROPERTIES
+            unofficial::angle::${LIB_TARGET} PROPERTIES
             IMPORTED_LOCATION ${LIB_PATH_SHARED}
             IMPORTED_IMPLIB ${LIB_PATH_STATIC}
             IMPORTED_CONFIGURATIONS "RELEASE"
         )
     else()
-        add_library(unofficial::angle::${LIB_NAME} STATIC IMPORTED)
+        add_library(unofficial::angle::${LIB_TARGET} STATIC IMPORTED)
 
         set_target_properties(
 
-            unofficial::angle::${LIB_NAME} PROPERTIES
+            unofficial::angle::${LIB_TARGET} PROPERTIES
             IMPORTED_LOCATION ${LIB_PATH_STATIC}
             IMPORTED_CONFIGURATIONS "RELEASE"
         )
     endif()
 
-    # set_target_properties(unofficial::angle::${LIB_NAME} PROPERTIES INTERFACE_LINK_LIBRARIES ${_LIB})
-    target_include_directories(unofficial::angle::${LIB_NAME} INTERFACE ${TARGET_INCLUDES_PREFIX_PATH})
+    # set_target_properties(unofficial::angle::${LIB_TARGET} PROPERTIES INTERFACE_LINK_LIBRARIES ${_LIB})
+    target_include_directories(unofficial::angle::${LIB_TARGET} INTERFACE ${TARGET_INCLUDES_PREFIX_PATH})
 
     # Static debug library
-    message(DEBUG "Searching for ${LIB_NAME} in ${TARGET_LIBRARY_PREFIX_PATH}/debug/lib and ${TARGET_LIBRARY_PREFIX_PATH}/debug/bin")
-    find_library(LIB_DEBUG_PATH_STATIC NAMES ${LIB_NAME} PATHS "${TARGET_LIBRARY_PREFIX_PATH}/debug/lib")
-    if(NOT LIB_DEBUG_PATH_STATIC)
-        message(DEBUG "Static debug library was not found. Short-circuiting...")
-        continue()
+    message(DEBUG "Searching for ${LIB_TARGET} and ${LIB_TARGET}_static  in ${TARGET_LIBRARY_PREFIX_PATH}/debug/lib and ${TARGET_LIBRARY_PREFIX_PATH}/debug/bin")
+    if(${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "STATIC" OR NOT LINUX)
+        find_library(LIB_DEBUG_PATH_STATIC NAMES ${LIB_TARGET} "${LIB_TARGET}_static" PATHS "${TARGET_LIBRARY_PREFIX_PATH}/debug/lib" NO_DEFAULT_PATH)
+        if(NOT LIB_DEBUG_PATH_STATIC)
+            message(DEBUG "Static debug library was not found. Short-circuiting...")
+            continue()
+        endif()
     endif()
 
     # Dynamic debug library
     if(${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
-        find_shared_library(LIB_DEBUG_PATH_SHARED ${LIB_NAME} "${TARGET_LIBRARY_PREFIX_PATH}/debug/bin")
+        find_shared_library(LIB_DEBUG_PATH_SHARED ${LIB_TARGET} "${TARGET_LIBRARY_PREFIX_PATH}/debug/bin")
 
         if(NOT LIB_DEBUG_PATH_SHARED)
             message(DEBUG "Dynamic debug library was not found. Short-circuiting...")
             continue()
         endif()
 
+        if(LINUX)
+            set(LIB_DEBUG_PATH_STATIC ${LIB_DEBUG_PATH_SHARED})
+        endif()
+
         set_target_properties(
-            unofficial::angle::${LIB_NAME} PROPERTIES
+            unofficial::angle::${LIB_TARGET} PROPERTIES
             IMPORTED_LOCATION_DEBUG ${LIB_DEBUG_PATH_SHARED}
             IMPORTED_IMPLIB_DEBUG ${LIB_DEBUG_PATH_STATIC}
             IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
         )
     else()
         set_target_properties(
-            unofficial::angle::${LIB_NAME} PROPERTIES
+            unofficial::angle::${LIB_TARGET} PROPERTIES
             IMPORTED_LOCATION_DEBUG ${LIB_DEBUG_PATH_STATIC}
             IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
         )
     endif()
 
-    message(DEBUG "Target unofficial::angle::${LIB_NAME} has properties:")
-    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_LOCATION)
+    message(DEBUG "Target unofficial::angle::${LIB_TARGET} has properties:")
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_TARGET} IMPORTED_LOCATION)
     message(DEBUG "IMPORTED_LOCATION: ${TEMP_VAR}")
-    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_LOCATION_DEBUG)
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_TARGET} IMPORTED_LOCATION_DEBUG)
     message(DEBUG "IMPORTED_LOCATION_DEBUG: ${TEMP_VAR}")
-    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_IMPLIB)
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_TARGET} IMPORTED_IMPLIB)
     message(DEBUG "IMPORTED_IMPLIB: ${TEMP_VAR}")
-    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_IMPLIB_DEBUG)
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_TARGET} IMPORTED_IMPLIB_DEBUG)
     message(DEBUG "IMPORTED_IMPLIB_DEBUG: ${TEMP_VAR}")
-    get_target_property(TEMP_VAR unofficial::angle::${LIB_NAME} IMPORTED_CONFIGURATIONS)
+    get_target_property(TEMP_VAR unofficial::angle::${LIB_TARGET} IMPORTED_CONFIGURATIONS)
     message(DEBUG "IMPORTED_CONFIGURATIONS: ${TEMP_VAR}")
     unset(TEMP_VAR)
     
     # target_link_libraries(unofficial-angle INTERFACE ${_LIB})
-    unset(LIB_NAME)
+    unset(LIB_TARGET)
     unset(LIB_PATH_STATIC CACHE)
     unset(LIB_PATH_SHARED)
     unset(LIB_DEBUG_PATH_STATIC CACHE)
     unset(LIB_DEBUG_PATH_SHARED)
 endforeach()
 
+set(CMAKE_FIND_LIBRARY_PREFIXES ${CMAKE_FIND_LIBRARY_PREFIXES_OLD})
+unset(CMAKE_FIND_LIBRARY_PREFIXES_OLD)
+
 
 # Transative dependencies
 add_dependencies(unofficial::angle::libEGL unofficial::angle::libGLESv2)
-add_dependencies(unofficial::angle::libGLESv2 unofficial::angle::third_party_zlib)
+if(TARGET unofficial::angle::third_party_zlib)
+    add_dependencies(unofficial::angle::libGLESv2 unofficial::angle::third_party_zlib)
+endif()

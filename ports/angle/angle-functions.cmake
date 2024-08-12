@@ -50,29 +50,3 @@ function(fetch_angle_commit_id)
     endif()
     unset(COMMIT_ID_SCRIPT_CONTENT)
 endfunction()
-
-function(insert_msvc_library_loading_records TARGET_FILE LIBRARY_NAMES)
-    if(NOT VCPKG_TARGET_IS_WINDOWS OR VCPKG_LIBRARY_LINKAGE STREQUAL static)
-        message(WARNING "Incorrect usage of function")
-        return()
-    endif()
-
-    # Note: This will only work with MSVC, but I don't know how to detect for MSVC
-    file(READ "${CMAKE_CURRENT_LIST_DIR}/res/msvc-dynamic-link-record.cpp.in" LINK_RECORD_MODIFICATION_PATTERN)
-    foreach(LIB_NAME ${LIBRARY_NAMES})
-        string(APPEND LIBRARY_SEARCH_OBJECT_RECORD "    #pragma comment(lib, \"${LIB_NAME}.lib\")\n")
-    endforeach()
-    string(CONFIGURE "${LINK_RECORD_MODIFICATION_PATTERN}" LIBRARY_SEARCH_RECORD_PRAGMA_DIRECTIVE @ONLY)
-    debug_message("Inserting \"${LIBRARY_SEARCH_RECORD_PRAGMA_DIRECTIVE}\" into ${TARGET_FILE}")
-
-    file(READ ${TARGET_FILE} TARGET_FILE_BEFORE)
-    file(APPEND ${TARGET_FILE} ${LIBRARY_SEARCH_RECORD_PRAGMA_DIRECTIVE})
-    file(READ ${TARGET_FILE} TARGET_FILE_AFTER)
-    
-    # Sanity check:
-    string(SHA256 TARGET_FILE_BEFORE "${TARGET_FILE_BEFORE}")
-    string(SHA256 TARGET_FILE_AFTER "${TARGET_FILE_AFTER}")
-    if("${TARGET_FILE_BEFORE}" STREQUAL "${TARGET_FILE_AFTER}")
-        message(WARNING "Library search record was not inserted into file! DLL's might have to be manually added to binary folder.")
-    endif()
-endfunction()

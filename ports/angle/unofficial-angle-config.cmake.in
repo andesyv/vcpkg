@@ -1,4 +1,4 @@
-set(TARGET_INCLUDES_PREFIX_PATH @TARGET_INCLUDES_PREFIX_PATH@)
+set(TARGET_INCLUDES_PREFIX_PATH @PACKAGES_INCLUDE_DIR@)
 set(TARGET_LIBRARY_PREFIX_PATH @TARGET_LIBRARY_PREFIX_PATH@)
 set(TARGET_IMPORTED_LIBRARY_TYPE @TARGET_IMPORTED_LIBRARY_TYPE@)
 # "${CURRENT_INSTALLED_DIR}/$<$<CONFIG:DEBUG>:debug/>lib")
@@ -7,6 +7,7 @@ set(TARGET_IMPORTED_LIBRARY_TYPE @TARGET_IMPORTED_LIBRARY_TYPE@)
 # endif()
 
 set(_LIBRARIES "libEGL" "libGLESv2" "third_party_zlib")
+list(APPEND _LIBRARIES @ADDITIONAL_LIBRARY_TARGETS@)
 
 # if(WIN32)
 #     list(APPEND LIBRARIES_
@@ -169,6 +170,10 @@ endforeach()
 add_dependencies(unofficial::angle::libEGL unofficial::angle::libGLESv2)
 add_dependencies(unofficial::angle::libGLESv2 unofficial::angle::third_party_zlib)
 
+foreach(LIB_NAME @ADDITIONAL_LIBRARY_TARGETS@)
+    add_dependencies(unofficial::angle::libEGL unofficial::angle::${LIB_NAME})
+endforeach()
+
 # libEGL loads libGLESv2 dynamically on runtime which VCPKG obviously does not pick up on being
 # a dependency and won't automatically copy the DLL for. So do so manually here with this
 # complicated hack:
@@ -217,4 +222,8 @@ endfunction()
 if(VCPKG_APPLOCAL_DEPS AND ${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
     add_custom_runtime_dependency_copy_target(unofficial::angle::libEGL unofficial::angle::libGLESv2 libEGLAdditionalRuntimeDeps)
     add_custom_runtime_dependency_copy_target(unofficial::angle::libGLESv2 unofficial::angle::third_party_zlib libGLESv2AdditionalRuntimeDeps)
+
+    foreach(LIB_NAME @ADDITIONAL_LIBRARY_TARGETS@)
+        add_custom_runtime_dependency_copy_target(unofficial::angle::libEGL unofficial::angle::${LIB_NAME} "${LIB_NAME}AdditionalRuntimeDeps")
+    endforeach()
 endif()

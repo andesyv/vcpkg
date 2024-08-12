@@ -130,7 +130,7 @@
     },
     "angle": {
       "baseline": "chromium_6549",
-      "port-version": 0
+      "port-version": 1
     },
     "ankurvdev-embedresource": {
       "baseline": "0.0.11",

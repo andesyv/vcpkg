@@ -48,8 +48,7 @@
       "name": "metal",
       "platform": "osx"
     },
-    "opengl",
-    "opengles"
+    "opengl"
   ],
   "features": {
     "direct3d11": {
@@ -68,10 +67,7 @@
       "description": "Enable the null renderer which performs state tracking and validation but does not render any content (EGL_ANGLE_platform_angle_null)"
     },
     "opengl": {
-      "description": "Enable the OpenGL backend renderer (EGL_ANGLE_platform_angle_opengl)"
-    },
-    "opengles": {
-      "description": "Enable the OpenGL ES backend renderer (EGL_ANGLE_platform_angle_opengl)"
+      "description": "Enable the OpenGL and OpenGL ES backend renderers (EGL_ANGLE_platform_angle_opengl)"
     },
     "vulkan": {
       "description": "Enable the Vulkan backend renderer (EGL_ANGLE_platform_angle_vulkan)"

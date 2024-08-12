@@ -1,0 +1,12 @@
+diff --git a/DEPS b/DEPS
+index 54151cfa..5408d08d 100644
+--- a/DEPS
++++ b/DEPS
+@@ -4,7 +4,6 @@
+ 
+ # Avoids the need for a custom root variable.
+ use_relative_paths = True
+-git_dependencies = 'SYNC'
+ 
+ vars = {
+   'chromium_git': 'https://chromium.googlesource.com',

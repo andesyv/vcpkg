@@ -1,8 +1,17 @@
 diff --git a/DEPS b/DEPS
-index 37c591b1a..63219b409 100644
+index 57bf10484..549686199 100644
 --- a/DEPS
 +++ b/DEPS
-@@ -5044,15 +5044,6 @@ hooks = [
+@@ -7,8 +7,6 @@ use_relative_paths = True
+ 
+ gclient_gn_args_file = 'build/config/gclient_args.gni'
+ 
+-git_dependencies = "SYNC"
+-
+ gclient_gn_args = [
+   'checkout_angle_internal',
+   'checkout_angle_mesa',
+@@ -5540,15 +5538,6 @@ hooks = [
      'condition': 'not build_with_chromium',
    },
  

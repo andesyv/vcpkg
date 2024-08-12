@@ -48,7 +48,7 @@ foreach(LIB_TARGET ${LIBRARY_TARGETS})
     # Dynamic release library
     if(${TARGET_IMPORTED_LIBRARY_TYPE} STREQUAL "SHARED")
         # find_library(LIB_PATH_SHARED NAMES ${LIB_TARGET} PATHS "${TARGET_LIBRARY_PREFIX_PATH}/bin" NO_DEFAULT_PATH)
-        find_shared_library(LIB_PATH_SHARED ${LIB_NAME} "${TARGET_LIBRARY_PREFIX_PATH}/bin")
+        find_shared_library(LIB_PATH_SHARED ${LIB_TARGET} "${TARGET_LIBRARY_PREFIX_PATH}/bin")
 
         if(NOT LIB_PATH_SHARED)
             message(WARNING "Shared library for target ${LIB_TARGET} was not found and was excluded from the package")

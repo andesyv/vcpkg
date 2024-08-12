@@ -1,0 +1,28 @@
+diff --git a/DEPS b/DEPS
+index 199c978804..8ec48b464f 100644
+--- a/DEPS
++++ b/DEPS
+@@ -6,8 +6,6 @@ gclient_gn_args = [
+   'generate_location_tags',
+ ]
+ 
+-git_dependencies = 'SYNC'
+-
+ vars = {
+   'chromium_git': 'https://chromium.googlesource.com',
+   'dawn_git': 'https://dawn.googlesource.com',
+@@ -563,14 +561,6 @@ hooks = [
+                 '-s', 'build/toolchain/win/rc/mac/rc.sha1',
+     ],
+   },
+-  # Update build/util/LASTCHANGE.
+-  {
+-    'name': 'lastchange',
+-    'pattern': '.',
+-    'condition': 'dawn_standalone',
+-    'action': ['python3', 'build/util/lastchange.py',
+-               '-o', 'build/util/LASTCHANGE'],
+-  },
+   # TODO(https://crbug.com/1180257): Use CIPD for CMake on Windows.
+   {
+     'name': 'cmake_win32',

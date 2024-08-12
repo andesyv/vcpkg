@@ -22,9 +22,6 @@
       "name": "libxi",
       "platform": "linux"
     },
-    "egl-registry",
-    "opengl-registry",
-    "zlib",
     {
       "name": "vcpkg-gn",
       "host": true

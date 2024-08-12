@@ -1,22 +1,11 @@
-if(TARGET unofficial-angle)
-    return()
-endif()
+set(TARGET_INCLUDES_PREFIX_PATH @TARGET_INCLUDES_PREFIX_PATH@)
+set(TARGET_LIBRARY_PREFIX_PATHS @TARGET_LIBRARY_PREFIX_PATHS@)
+# "${CURRENT_INSTALLED_DIR}/$<$<CONFIG:DEBUG>:debug/>lib")
+# if(${DYNAMIC_LIBRARY})
+#     list(APPEND TARGET_LIBRARY_PREFIX_PATHS "${CURRENT_INSTALLED_DIR}/$<$<CONFIG:DEBUG>:debug/>bin")
+# endif()
 
-set(DEFINITIONS_DEBUG @DEFINITIONS_DEBUG@)
-set(DEFINITIONS_RELEASE @DEFINITIONS_RELEASE@)
-
-# Compute the installation prefix relative to this file.
-get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
-# get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-# get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-if(_IMPORT_PREFIX STREQUAL "/")
-    set(_IMPORT_PREFIX "")
-endif()
-
-add_library(unofficial-angle INTERFACE IMPORTED GLOBAL)
-add_library(unofficial::angle ALIAS unofficial-angle)
-
-set(_LIBRARIES @LINK_TARGETS@)
+set(_LIBRARIES "libEGL" "libGLESv2")
 
 # if(WIN32)
 #     list(APPEND LIBRARIES_
@@ -62,19 +51,26 @@ set(_LIBRARIES @LINK_TARGETS@)
 # endif()
 
 foreach(LIB_NAME ${_LIBRARIES})
-    find_library(_LIB NAMES ${LIB_NAME} ${LIB_NAME}.dll)
-    target_link_libraries(unofficial-angle INTERFACE ${_LIB})
+    if(TARGET unofficial::angle::${LIB_NAME})
+        continue()
+    endif()
+
+    message(STATUS "Searching for ${LIB_NAME} in ${TARGET_LIBRARY_PREFIX_PATHS}")
+    find_library(_LIB NAMES ${LIB_NAME} PATHS ${TARGET_LIBRARY_PREFIX_PATHS})
+    if(NOT _LIB)
+        message(WARNING "Link target ${LIB_NAME} was not found and was excluded from the package")
+        continue()
+    endif()
+
+    add_library(unofficial::angle::${LIB_NAME} @TARGET_IMPORTED_LIBRARY_TYPE@ IMPORTED)
+
+    # set_target_properties(unofficial::angle::${LIB_NAME} PROPERTIES IMPORTED_LOCATION ${_LIB})
+    set_target_properties(unofficial::angle::${LIB_NAME} PROPERTIES INTERFACE_LINK_LIBRARIES ${_LIB})
+    target_include_directories(unofficial::angle::${LIB_NAME} INTERFACE ${TARGET_INCLUDES_PREFIX_PATH})
+    
+    # target_link_libraries(unofficial-angle INTERFACE ${_LIB})
     # unset(_LIB CACHE)
 endforeach()
 
-# if(UNIX AND NOT APPLE)
-#     target_link_libraries(unofficial-angle INTERFACE -ldl -latomic -lpthread)
-# endif()
-
-target_include_directories(unofficial-angle INTERFACE ${_IMPORT_PREFIX}/include/unofficial-angle)
-
-target_compile_definitions(unofficial-angle INTERFACE
-    $<$<CONFIG:Debug>:${DEFINITIONS_DBG}>
-    $<$<CONFIG:Release>:${DEFINITIONS_REL}>)
-
-# target_compile_features(unofficial-angle INTERFACE cxx_std_14)
+# libEGL depends on libGLESv2
+target_link_libraries(unofficial::angle::libEGL INTERFACE unofficial::angle::libGLESv2)

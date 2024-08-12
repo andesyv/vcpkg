@@ -1,4 +1,4 @@
-function(checkout_in_path PATH URL REF)
+function(checkout_in_path PATH URL REF PATCHES)
     if(EXISTS "${PATH}")
         file(GLOB FILES "${PATH}/*")
         if(NOT "${FILES}" STREQUAL "")
@@ -11,6 +11,7 @@ function(checkout_in_path PATH URL REF)
         OUT_SOURCE_PATH DEP_SOURCE_PATH
         URL "${URL}"
         REF "${REF}"
+        PATCHES "${PATCHES}"
     )
     file(RENAME "${DEP_SOURCE_PATH}" "${PATH}")
     file(REMOVE_RECURSE "${DEP_SOURCE_PATH}")
@@ -31,11 +32,21 @@ function(checkout_dependencies)
         list(GET dep_parts 0 rel_path)
         list(GET dep_parts 1 repo)
         list(GET dep_parts 2 commit)
-        
+
+        list(LENGTH dep_parts dep_parts_length)
+        if(dep_parts_length GREATER 3)
+            list(SUBLIST dep_parts 3 -1 patches)
+        else()
+            set(patches "")
+        endif()
+
+        debug_message("Checking out ${SOURCE_PATH}/${rel_path} using repo ${repo}@${commit} with patches: ${patches}")
+
         checkout_in_path(
             "${SOURCE_PATH}/${rel_path}"
             "${repo}"
             "${commit}"
+            "${patches}"
         )
     endforeach()
 endfunction()

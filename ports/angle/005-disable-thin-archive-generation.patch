@@ -1,0 +1,42 @@
+diff --git a/config/BUILDCONFIG.gn b/config/BUILDCONFIG.gn
+index 29625fa7a..8596964df 100644
+--- a/config/BUILDCONFIG.gn
++++ b/config/BUILDCONFIG.gn
+@@ -352,7 +352,7 @@ default_compiler_configs = [
+   "//build/config/compiler:no_rtti",
+   "//build/config/compiler:no_unresolved_symbols",
+   "//build/config/compiler:runtime_library",
+-  "//build/config/compiler:thin_archive",
++#  "//build/config/compiler:thin_archive",
+   "//build/config/compiler:thinlto_optimize_default",
+   "//build/config/compiler/pgo:default_pgo_flags",
+   "//build/config/coverage:default_coverage",
+diff --git a/config/compiler/BUILD.gn b/config/compiler/BUILD.gn
+index fd2b10d87..3249e640f 100644
+--- a/config/compiler/BUILD.gn
++++ b/config/compiler/BUILD.gn
+@@ -2199,15 +2199,15 @@ config("export_dynamic") {
+ #    into the library. See `gn help complete_static_lib` for details.
+ # 2. Remove the thin_archive config, so that the .a file actually contains all
+ #    .o files, instead of just references to .o files in the build directoy
+-config("thin_archive") {
+-  # The macOS and iOS default linker ld64 does not support reading thin
+-  # archives.
+-  if ((is_posix && !is_nacl && (!is_apple || use_lld)) || is_fuchsia) {
+-    arflags = [ "-T" ]
+-  } else if (is_win && use_lld) {
+-    arflags = [ "/llvmlibthin" ]
+-  }
+-}
++# config("thin_archive") {
++#   # The macOS and iOS default linker ld64 does not support reading thin
++#   # archives.
++#   if ((is_posix && !is_nacl && (!is_apple || use_lld)) || is_fuchsia) {
++#     arflags = [ "-T" ]
++#   } else if (is_win && use_lld) {
++#     arflags = [ "/llvmlibthin" ]
++#   }
++# }
+ 
+ # exceptions -------------------------------------------------------------------
+ #

@@ -255,13 +255,16 @@ set (DEPENDENCIES
     "third_party/vulkan-deps/vulkan-utility-libraries/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Utility-Libraries ca0ad5798733d94a80a322c98dab9ca9a0cd0fb2"
     "third_party/vulkan-deps/vulkan-validation-layers/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-ValidationLayers 38891e233bf914cd82bc0a8b4c91b7b94e3cd86b"
 )
+    
+message(STATUS "Fetching dependencies")
 
 foreach (dep IN LISTS DEPENDENCIES)
     separate_arguments(dep_parts UNIX_COMMAND "${dep}")
     list(GET dep_parts 0 rel_path)
     list(GET dep_parts 1 repo)
     list(GET dep_parts 2 commit)
-
+    
+    
     checkout_in_path(
         "${SOURCE_PATH}/${rel_path}"
         "${repo}"
@@ -479,7 +482,7 @@ vcpkg_execute_required_process(
 # endif()
 
 # set (GN_CONFIGURE_OPTIONS "${GN_CONFIGURE_OPTIONS} target_cpu=\"${VCPKG_TARGET_ARCHITECTURE}\" is_clang=false build_with_chromium=false libEGL_egl_loader_config=false")
-set (GN_CONFIGURE_OPTIONS "${GN_CONFIGURE_OPTIONS} target_cpu=\"${VCPKG_TARGET_ARCHITECTURE}\" is_clang=false build_with_chromium=false")
+set (GN_CONFIGURE_OPTIONS "${GN_CONFIGURE_OPTIONS} target_cpu=\"${VCPKG_TARGET_ARCHITECTURE}\" is_clang=false build_with_chromium=false use_dummy_lastchange=true")
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
     set (GN_CONFIGURE_OPTIONS "${GN_CONFIGURE_OPTIONS} is_component_build=true")
@@ -505,6 +508,12 @@ vcpkg_gn_configure(
 set(NINJA_REBUILD "build build.ninja: gn\n  generator = 1\n  depfile = build.ninja.d")
 vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/build.ninja" "${NINJA_REBUILD}" "")
 vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninja" "${NINJA_REBUILD}" "")
+
+
+# configure_file("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/args.gn" "${CURRENT_BUILDTREES_DIR}/args-dbg.gn" COPYONLY)
+# configure_file("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/args.gn" "${CURRENT_BUILDTREES_DIR}/args-rel.gn" COPYONLY)
+vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/build.ninja.d" "./args.gn " "")
+vcpkg_replace_string("${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/build.ninja.d" "./args.gn " "")
 
 set (BUILD_TARGETS :libEGL :libGLESv2)
 set (LINK_TARGETS libEGL libGLESv2)
@@ -539,6 +548,8 @@ vcpkg_gn_install(
     TARGETS ${BUILD_TARGETS}
 )
 
+# vcpkg_cmake_config_fixup(PACKAGE_NAME "unofficial-${PORT}")
+
 set(PACKAGES_INCLUDE_DIR "${CURRENT_PACKAGES_DIR}/include/${PORT}")
 set(SOURCE_INCLUDE_DIR "${SOURCE_PATH}/include")
 file(GLOB_RECURSE INCLUDE_FILES LIST_DIRECTORIES false RELATIVE "${SOURCE_INCLUDE_DIR}" "${SOURCE_INCLUDE_DIR}/*.h")
@@ -546,9 +557,12 @@ foreach(_file ${INCLUDE_FILES})
     configure_file("${SOURCE_INCLUDE_DIR}/${_file}" "${PACKAGES_INCLUDE_DIR}/${_file}" COPYONLY)
 endforeach()
 
+# Create package config file
 set(DEFINITIONS_DEBUG ${DEFINITIONS})
 set(DEFINITIONS_RELEASE ${DEFINITIONS})
-configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/share/${PORT}/unofficial-angle-config.cmake.in" @ONLY)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/unofficial-angle-config.cmake.in" "${CURRENT_PACKAGES_DIR}/share/${PORT}/unofficial-angle-config.cmake" @ONLY)
+vcpkg_cmake_config_fixup(PACKAGE_NAME unofficial-angle CONFIG_PATH "share/${PORT}")
+
 
 vcpkg_copy_pdbs()
 
@@ -567,5 +581,8 @@ vcpkg_copy_pdbs()
 # unset(directory_child)
 # unset(directory_children)
 
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
-file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+# Copyright and usage
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
+# file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+# file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
+configure_file("${CMAKE_CURRENT_LIST_DIR}/usage.in" "${CURRENT_PACKAGES_DIR}/share/${PORT}/usage" @ONLY)

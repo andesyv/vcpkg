@@ -10,7 +10,6 @@
   "homepage": "https://github.com/google/angle",
   "license": "BSD-3-Clause",
   "dependencies": [
-    "egl-registry",
     {
       "name": "libx11",
       "platform": "linux"
@@ -23,12 +22,17 @@
       "name": "libxi",
       "platform": "linux"
     },
+    "egl-registry",
     "opengl-registry",
+    "zlib",
     {
       "name": "vcpkg-gn",
       "host": true
     },
-    "zlib",
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
     {
       "name": "vcpkg-get-python-packages",
       "host": true

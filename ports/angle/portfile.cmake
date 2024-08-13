@@ -35,7 +35,7 @@ x_vcpkg_get_python_packages(PYTHON_VERSION "3" OUT_PYTHON_VAR "PYTHON3" PACKAGES
 get_filename_component(PYTHON3_PATH ${PYTHON3} DIRECTORY)
 vcpkg_add_to_path(PREPEND "${PYTHON3_PATH}")
 # GN on Windows expects python to be reachable as "python3"
-if(WIN32)
+if(VCPKG_HOST_IS_WINDOWS)
     get_filename_component(PYTHON3_EXT ${PYTHON3} EXT)
     file(CREATE_LINK ${PYTHON3} "${PYTHON3_PATH}/python3${PYTHON3_EXT}" COPY_ON_ERROR)
 endif()

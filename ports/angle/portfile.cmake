@@ -1,3 +1,5 @@
+vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY) # Only dynamic linkage is supported as of now
+
 include("${CMAKE_CURRENT_LIST_DIR}/angle-functions.cmake")
 
 if(VCPKG_TARGET_IS_LINUX)
@@ -5,6 +7,16 @@ if(VCPKG_TARGET_IS_LINUX)
     # Full list of dependencies is available through <angle source>/build/install-build-deps.py
     # TODO: Update list
     message(WARNING "${PORT} currently requires the following libraries from the system package manager:\n    libx11-dev\n    mesa-common-dev\n    libxi-dev\n    libxext-dev\n\nThese can be installed on Ubuntu systems via apt-get install libx11-dev mesa-common-dev libxi-dev libxext-dev.")
+elseif(VCPKG_TARGET_IS_WINDOWS)
+    # Windows 10 SDK 10.0.22621 (with debugging tools) is required on Windows
+    # Currently supported SDK versions can be found in (<angle source>/build/vs_toolchain.py)
+    verify_windows_sdk(
+        SDK_VERSION "10.0.22621"
+        CHECK_FOR_DEBUGGING_TOOLS # ANGLE additionally requires "debugging tools" enabled for the SDK
+    )
+
+    string(REGEX REPLACE "\\\\+$" "" WindowsSdkDir $ENV{WindowsSdkDir})
+    string(APPEND GN_CONFIGURE_OPTIONS " windows_sdk_path=\"${WindowsSdkDir}\"")
 endif()
 
 # With the addition of the rust-toolchain pipeline, the python script extracting the rust-toolchain will fail if the Windows path limit is reached...
@@ -68,15 +80,6 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS feature_options
 
 if(NOT USE_OPENGL_BACKEND AND NOT USE_VULKAN_BACKEND AND NOT USE_D3D9_BACKEND AND NOT USE_D3D11_BACKEND AND NOT USE_METAL_BACKEND AND NOT USE_NULL_BACKEND)
     message(FATAL_ERROR "At least one backend must be enabled")
-endif()
-
-# Windows 10 SDK is required for the D3D debug runtime
-# Currently supported SDK versions can be found in (<angle source>/build/vs_toolchain.py)
-if(VCPKG_TARGET_IS_WINDOWS AND NOT $ENV{WindowsSdkDir} STREQUAL "" AND (USE_D3D9_BACKEND OR USE_D3D11_BACKEND))
-    vcpkg_get_windows_sdk(WINDOWS_SDK)
-    if(WINDOWS_SDK VERSION_LESS "10.0.22621")
-        message(WARNING "The D3D backend debug runtime requires a Windows SDK of 10.0.22621 or higher")
-    endif()
 endif()
 
 append_gn_option(angle_enable_gl ${USE_OPENGL_BACKEND})

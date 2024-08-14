@@ -43,7 +43,11 @@ vcpkg_find_acquire_program(GIT)
 get_filename_component(GIT_PATH ${GIT} DIRECTORY)
 vcpkg_add_to_path(PREPEND "${GIT_PATH}")
 
-x_vcpkg_get_python_packages(PYTHON_VERSION "3" OUT_PYTHON_VAR "PYTHON3" PACKAGES httplib2)
+x_vcpkg_get_python_packages(
+    PYTHON_VERSION "3"
+    OUT_PYTHON_VAR "PYTHON3"
+    PACKAGES httplib2 certifi
+)
 get_filename_component(PYTHON3_PATH ${PYTHON3} DIRECTORY)
 vcpkg_add_to_path(PREPEND "${PYTHON3_PATH}")
 # GN on Windows expects python to be reachable as "python3"
@@ -156,7 +160,7 @@ checkout_dependencies(
     "third_party/vulkan-validation-layers/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-ValidationLayers 3131e4be90985c9f3c063d1527f0368a98166765"
     "third_party/vulkan_memory_allocator https://chromium.googlesource.com/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator 56300b29fbfcc693ee6609ddad3fdd5b7a449a21"
     "third_party/zlib https://chromium.googlesource.com/chromium/src/third_party/zlib 71660e196bcfc74b2c657a46b512037cb49079a2"
-    "tools/clang https://chromium.googlesource.com/chromium/src/tools/clang.git bd2518c73b763cb742dadb6049d78c65e7a3610a"
+    "tools/clang https://chromium.googlesource.com/chromium/src/tools/clang.git bd2518c73b763cb742dadb6049d78c65e7a3610a 008-fix-ssl-certification-for-download-script.patch"
     "tools/mb https://chromium.googlesource.com/chromium/src/tools/mb 18f2887c9bd7d013bd2630ac78106ddb4f130623"
     "tools/md_browser https://chromium.googlesource.com/chromium/src/tools/md_browser 6cc8e58a83412dc31de6fb7614fadb0b51748d4b"
     "tools/memory https://chromium.googlesource.com/chromium/src/tools/memory d7a1bee91c1e4927b0f4d35f26aecb4cafa7df8c"

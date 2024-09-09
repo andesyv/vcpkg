@@ -60,17 +60,17 @@ endif()
 
 
 # chromium/6652
-set(ANGLE_COMMIT 6e248bcb44bfae1c7d63b38ccd8883380234170e)
-set(ANGLE_SHA512 f102b1215cd2ff10adccb78f84a73999be11e6488b5b19ea0cfea1ec2df597bbcf1d93f48790d1541f9f7ca71cd7ac7ccaf7754d24287e6b93a24fcc20d69ecd)
+set(ANGLE_COMMIT fc65058c1593956a69d06cb556ec97b2cf67f5ee)
+set(ANGLE_SHA512 1c273b1f4e00db9c39275222b4ed407e4bada2f7544f61e69ab130f00d91932ad07deff911f1185f7935417c498b516cda97f5a5b8f9e0e1d69f36716f4e0a28)
 
 # The value of ANGLE_COMMIT_DATE is the output of
 # git show -s --format="%ci" HEAD
 # in a checked out ANGLE repo:
-set(ANGLE_COMMIT_DATE "2024-08-10 05:49:01 +0000")
+set(ANGLE_COMMIT_DATE "2024-09-06 23:33:02 +0000")
 # The value of ANGLE_COMMIT_POSITION is the output of
 # git rev-list HEAD --count
 # in a checked out ANGLE repo:
-set(ANGLE_COMMIT_POSITION 23643)
+set(ANGLE_COMMIT_POSITION 23816)
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS feature_options
     FEATURES
@@ -113,73 +113,66 @@ vcpkg_from_github(
 #    (py path/to/depot_tools/gclient.py recurse --no-progress -j1 powershell -Command parse-dep-info-for-current-directory.ps1)
 
 checkout_dependencies(
-    "build https://chromium.googlesource.com/chromium/src/build.git a0e5713502d43369d238f110f789c190e5e3c022 005-disable-thin-archive-generation.patch"
-    "buildtools https://chromium.googlesource.com/chromium/src/buildtools.git 19268125543e152a215808913dacafe77ecae63f"
-    "testing https://chromium.googlesource.com/chromium/src/testing 7605e1a3e36ad115dbf98ea87f84ca19a30ad5f6"
+    "build https://chromium.googlesource.com/chromium/src/build.git 0f665af83d239a975953e7a4593927ece5148879 005-disable-thin-archive-generation.patch"
+    "buildtools https://chromium.googlesource.com/chromium/src/buildtools.git 012c060b76f063701ba9749166dacc853dd9cc89"
+    "testing https://chromium.googlesource.com/chromium/src/testing ad248e83d004cb24b0f5486d839ce708c4a604ca"
     "third_party/EGL-Registry/src https://chromium.googlesource.com/external/github.com/KhronosGroup/EGL-Registry 7dea2ed79187cd13f76183c4b9100159b9e3e071"
     "third_party/OpenCL-CTS/src https://chromium.googlesource.com/external/github.com/KhronosGroup/OpenCL-CTS e0a31a03fc8f816d59fd8b3051ac6a61d3fa50c6"
     "third_party/OpenCL-Docs/src https://chromium.googlesource.com/external/github.com/KhronosGroup/OpenCL-Docs 774114e8761920b976d538d47fad8178d05984ec"
     "third_party/OpenCL-ICD-Loader/src https://chromium.googlesource.com/external/github.com/KhronosGroup/OpenCL-ICD-Loader 9b5e3849b49a1448996c8b96ba086cd774d987db"
     "third_party/OpenGL-Registry/src https://chromium.googlesource.com/external/github.com/KhronosGroup/OpenGL-Registry 5bae8738b23d06968e7c3a41308568120943ae77"
     "third_party/Python-Markdown https://chromium.googlesource.com/chromium/src/third_party/Python-Markdown 0f4473546172a64636f5d841410c564c0edad625"
-    "third_party/SwiftShader https://swiftshader.googlesource.com/SwiftShader 65157d32945d9a75fc9a657e878a1b2f61342f03"
-    "third_party/VK-GL-CTS/src https://chromium.googlesource.com/external/github.com/KhronosGroup/VK-GL-CTS 50e83129b5587b60400ff90abb24bb658630c3eb"
-    "third_party/abseil-cpp https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp 0b4fc47c61258a1ac696a8a495e1f79c69b00266"
+    "third_party/SwiftShader https://swiftshader.googlesource.com/SwiftShader 5561c71fa64e5f7f726f74f23a8aac5cc308d18a"
+    "third_party/VK-GL-CTS/src https://chromium.googlesource.com/external/github.com/KhronosGroup/VK-GL-CTS 7d2299e67fe7c84f6ae883962ff080487f091e1d"
+    "third_party/abseil-cpp https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp ea8a06debe2dc70afb1a257dd75f89ba056a526f"
     "third_party/astc-encoder/src https://chromium.googlesource.com/external/github.com/ARM-software/astc-encoder 573c475389bf51d16a5c3fc8348092e094e50e8f"
-    "third_party/catapult https://chromium.googlesource.com/catapult.git 2feeb46c600d86a89b31b6f03050b205f0d4c32a"
+    "third_party/catapult https://chromium.googlesource.com/catapult.git 1b83be0f9678815742dbd6114be0bdc4478bd047"
     "third_party/cherry https://android.googlesource.com/platform/external/cherry 4f8fb08d33ca5ff05a1c638f04c85bbb8d8b52cc"
     "third_party/clang-format/script https://chromium.googlesource.com/external/github.com/llvm/llvm-project/clang/tools/clang-format.git 3c0acd2d4e73dd911309d9e970ba09d58bf23a62"
     "third_party/clspv/src https://chromium.googlesource.com/external/github.com/google/clspv a173c052455434a422bcfe5c12ffe44d574fd6e1"
-    "third_party/dawn https://dawn.googlesource.com/dawn.git eb249b37e3e8aba8c60efe1be0b09263944f6b9b 006-disable-gclient-hooks-dawn.patch"
-    "third_party/depot_tools https://chromium.googlesource.com/chromium/tools/depot_tools.git 75932421da2cd8b5807a4ac52ed2a6f46d7c2120"
+    "third_party/dawn https://dawn.googlesource.com/dawn.git 1eca38fa52364bf66c0d288a0537a2813d72b39b 006-disable-gclient-hooks-dawn.patch"
+    "third_party/depot_tools https://chromium.googlesource.com/chromium/tools/depot_tools.git 43691064b48769d3b084d8feee29990f2bd70dff"
     "third_party/glmark2/src https://chromium.googlesource.com/external/github.com/glmark2/glmark2 ca8de51fedb70bace5351c6b002eb952c747e889"
-    "third_party/glslang/src https://chromium.googlesource.com/external/github.com/KhronosGroup/glslang 7c4d91e7819a1d27213aa3499953d54ae1a00e8f"
+    "third_party/glslang/src https://chromium.googlesource.com/external/github.com/KhronosGroup/glslang a496a34b439022750d41d2ba04fbbe416ef81c9a"
     "third_party/googletest https://chromium.googlesource.com/chromium/src/third_party/googletest 17bbed2084d3127bd7bcd27283f18d7a5861bea8"
     "third_party/jinja2 https://chromium.googlesource.com/chromium/src/third_party/jinja2 2f6f2ff5e4c1d727377f5e1b9e1903d871f41e74"
     "third_party/jsoncpp https://chromium.googlesource.com/chromium/src/third_party/jsoncpp f62d44704b4da6014aa231cfc116e7fd29617d2a"
-    "third_party/libc++/src https://chromium.googlesource.com/external/github.com/llvm/llvm-project/libcxx.git 7993b2fda28215023f8e0a1f6d0adc48812dc9f0"
-    "third_party/libc++abi/src https://chromium.googlesource.com/external/github.com/llvm/llvm-project/libcxxabi.git eb6567388e89d9730c76dee71d68ac82e4a1abf6"
+    "third_party/libc++/src https://chromium.googlesource.com/external/github.com/llvm/llvm-project/libcxx.git a4812f9f726e74b536daccdc8756e9bca5736886"
+    "third_party/libc++abi/src https://chromium.googlesource.com/external/github.com/llvm/llvm-project/libcxxabi.git 11b62edaf245bb83bc259c37f269446cb34ef01e"
     "third_party/libdrm https://chromium.googlesource.com/chromiumos/third_party/libdrm 474894ed17a037a464e5bd845a0765a50f647898"
-    "third_party/libjpeg_turbo https://chromium.googlesource.com/chromium/deps/libjpeg_turbo.git ccfbe1c82a3b6dbe8647ceb36a3f9ee711fba3cf"
+    "third_party/libjpeg_turbo https://chromium.googlesource.com/chromium/deps/libjpeg_turbo.git 4426a8da65e8d1eb652210d0c5b3a339e05aec01"
     "third_party/libpng/src https://android.googlesource.com/platform/external/libpng d2ece84bd73af1cd5fae5e7574f79b40e5de4fba"
-    "third_party/libunwind/src https://chromium.googlesource.com/external/github.com/llvm/llvm-project/libunwind.git 6db1ccfa71064a8129710fc77a567160fdfba7fd"
+    "third_party/libunwind/src https://chromium.googlesource.com/external/github.com/llvm/llvm-project/libunwind.git dc70138c3e68e2f946585f134e20815851e26263"
     "third_party/llvm/src https://chromium.googlesource.com/external/github.com/llvm/llvm-project d222fa4521531cc4ac14b8e157d231c108c003be"
-    "third_party/lunarg-vulkantools/src https://chromium.googlesource.com/external/github.com/LunarG/VulkanTools a12be94856baf210bb7ae9457dbdf907148caa0a"
+    "third_party/lunarg-vulkantools/src https://chromium.googlesource.com/external/github.com/LunarG/VulkanTools a24a94aa0d1fc4e5556bdf9c6b2afe8eacc55326"
     "third_party/markupsafe https://chromium.googlesource.com/chromium/src/third_party/markupsafe 6638e9b0a79afc2ff7edd9e84b518fe7d5d5fea9"
     "third_party/nasm https://chromium.googlesource.com/chromium/deps/nasm.git f477acb1049f5e043904b87b825c5915084a9a29"
     "third_party/protobuf https://chromium.googlesource.com/chromium/src/third_party/protobuf da2fe725b80ac0ba646fbf77d0ce5b4ac236f823"
     "third_party/rapidjson/src https://chromium.googlesource.com/external/github.com/Tencent/rapidjson 781a4e667d84aeedbeb8184b7b62425ea66ec59f"
     "third_party/spirv-cross/src https://chromium.googlesource.com/external/github.com/KhronosGroup/SPIRV-Cross b8fcf307f1f347089e3c46eb4451d27f32ebc8d3"
-    "third_party/spirv-headers/src https://chromium.googlesource.com/external/github.com/KhronosGroup/SPIRV-Headers f013f08e4455bcc1f0eed8e3dd5e2009682656d9"
-    "third_party/spirv-tools/src https://chromium.googlesource.com/external/github.com/KhronosGroup/SPIRV-Tools b64a423b44f448df5464978173e28be12069b73c"
-    "third_party/vulkan-deps https://chromium.googlesource.com/vulkan-deps 236cdecbee13fdf18b5a7f501d696700e6c0ef62 007-disable-gclient-hooks-vulkan-deps.patch"
-    "third_party/vulkan-headers/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Headers 595c8d4794410a4e64b98dc58d27c0310d7ea2fd"
-    "third_party/vulkan-loader/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader faeb5882c7faf3e683ebb1d9d7dbf9bc337b8fa6"
-    "third_party/vulkan-tools/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Tools 7d5cdf62e4f2935425faab1270fe1c9a401fa664"
-    "third_party/vulkan-utility-libraries/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Utility-Libraries 45b881573538f8e481cb6e1d811a9076be6920c1"
-    "third_party/vulkan-validation-layers/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-ValidationLayers 3131e4be90985c9f3c063d1527f0368a98166765"
+    "third_party/spirv-headers/src https://chromium.googlesource.com/external/github.com/KhronosGroup/SPIRV-Headers efb6b4099ddb8fa60f62956dee592c4b94ec6a49"
+    "third_party/spirv-tools/src https://chromium.googlesource.com/external/github.com/KhronosGroup/SPIRV-Tools e1782d6675b88225225e331a6318554d473c54db"
+    "third_party/vulkan-deps https://chromium.googlesource.com/vulkan-deps 725499142cb601efc3f66bdb16d75843c0760478 007-disable-gclient-hooks-vulkan-deps.patch"
+    "third_party/vulkan-headers/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Headers c6391a7b8cd57e79ce6b6c832c8e3043c4d9967b"
+    "third_party/vulkan-loader/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Loader c758bac8bf1580b5018adafd3a2ec709237b0134"
+    "third_party/vulkan-tools/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Tools 4c63e845962ff3b197855f3ae4907a47d0863f5a"
+    "third_party/vulkan-utility-libraries/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-Utility-Libraries fbb4db92c6b2ac09003b2b8e5ceb978f4f2dda71"
+    "third_party/vulkan-validation-layers/src https://chromium.googlesource.com/external/github.com/KhronosGroup/Vulkan-ValidationLayers af7b0a35d009b5ad6e0b280a5b81388608ebfe39"
     "third_party/vulkan_memory_allocator https://chromium.googlesource.com/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator 56300b29fbfcc693ee6609ddad3fdd5b7a449a21"
-    "third_party/zlib https://chromium.googlesource.com/chromium/src/third_party/zlib 71660e196bcfc74b2c657a46b512037cb49079a2"
-    "tools/clang https://chromium.googlesource.com/chromium/src/tools/clang.git bd2518c73b763cb742dadb6049d78c65e7a3610a 008-fix-ssl-certification-for-download-script.patch"
-    "tools/mb https://chromium.googlesource.com/chromium/src/tools/mb 18f2887c9bd7d013bd2630ac78106ddb4f130623"
+    "third_party/zlib https://chromium.googlesource.com/chromium/src/third_party/zlib d3aea2341cdeaf7e717bc257a59aa7a9407d318a"
+    "tools/clang https://chromium.googlesource.com/chromium/src/tools/clang.git 5208ebe9c2e5e20b332798f99501e3faaaa059b6 008-fix-ssl-certification-for-download-script.patch"
+    "tools/mb https://chromium.googlesource.com/chromium/src/tools/mb 6417f436c78b355ef2e02485789acbeae1ca4e10"
     "tools/md_browser https://chromium.googlesource.com/chromium/src/tools/md_browser 6cc8e58a83412dc31de6fb7614fadb0b51748d4b"
-    "tools/memory https://chromium.googlesource.com/chromium/src/tools/memory d7a1bee91c1e4927b0f4d35f26aecb4cafa7df8c"
-    "tools/perf https://chromium.googlesource.com/chromium/src/tools/perf 647af9c63d15b9eff470d2beb282efd82a2346bf"
+    "tools/memory https://chromium.googlesource.com/chromium/src/tools/memory a7bb45e874cd595c082fdbf9697afe3b49dcb9ae"
+    "tools/perf https://chromium.googlesource.com/chromium/src/tools/perf 9da6470c4783a9c170230758e336b9de0b39c503"
     "tools/protoc_wrapper https://chromium.googlesource.com/chromium/src/tools/protoc_wrapper dbcbea90c20ae1ece442d8ef64e61c7b10e2b013"
-    "tools/rust https://chromium.googlesource.com/chromium/src/tools/rust.git e27ef2019ac1dcd87d15640aa1ba5ca662e44158"
+    "tools/rust https://chromium.googlesource.com/chromium/src/tools/rust.git 24da716443785814f2425c0160f88220e7b8b486"
     "tools/valgrind https://chromium.googlesource.com/chromium/src/tools/valgrind f9f02d66abacbb6b1bf00573b7426ec6dc767b38"
-    "third_party/dawn/third_party/dxc https://chromium.googlesource.com/external/github.com/microsoft/DirectXShaderCompiler 49d1ae9a029c404141050e270c05c9348b1011af"
-    "third_party/dawn/third_party/glfw https://chromium.googlesource.com/external/github.com/glfw/glfw b35641f4a3c62aa86a0b3c983d163bc0fe36026d"
-    "third_party/dawn/third_party/khronos/EGL-Registry https://chromium.googlesource.com/external/github.com/KhronosGroup/EGL-Registry 7dea2ed79187cd13f76183c4b9100159b9e3e071"
-    "third_party/dawn/third_party/khronos/OpenGL-Registry https://chromium.googlesource.com/external/github.com/KhronosGroup/OpenGL-Registry 5bae8738b23d06968e7c3a41308568120943ae77"
-    "third_party/dawn/third_party/webgpu-headers https://chromium.googlesource.com/external/github.com/webgpu-native/webgpu-headers 8049c324dc7b3c09dc96ea04cb02860f272c8686"
-    "third_party/googletest/src https://chromium.googlesource.com/external/github.com/google/googletest.git 2d924d7a971e9667d76ad09727fb2402b4f8a1e3"
-    "third_party/jsoncpp/source https://chromium.googlesource.com/external/github.com/open-source-parsers/jsoncpp.git 42e892d96e47b1f6e29844cc705e148ec4856448"
 )
 
 if(VCPKG_TARGET_IS_LINUX)
     checkout_dependencies(
-        "third_party/wayland https://chromium.googlesource.com/external/anongit.freedesktop.org/git/wayland/wayland 75c1a93e2067220fa06208f20f8f096bb463ec08"
+        "third_party/wayland https://chromium.googlesource.com/angle/angle.git fc65058c1593956a69d06cb556ec97b2cf67f5ee"
         "third_party/dawn/third_party/dxheaders https://chromium.googlesource.com/external/github.com/microsoft/DirectX-Headers 980971e835876dc0cde415e8f9bc646e64667bf7"
     )
 endif()

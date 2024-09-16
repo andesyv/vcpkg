@@ -1,6 +1,7 @@
 {
   "name": "imgui",
   "version": "1.91.0",
+  "port-version": 1,
   "description": "Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.",
   "homepage": "https://github.com/ocornut/imgui",
   "license": "MIT",
@@ -90,6 +91,9 @@
     },
     "opengl3-binding": {
       "description": "Make available OpenGL3/ES/ES2 (modern) binding"
+    },
+    "opengl3-proc-address-loader": {
+      "description": "Instead of using the built-in GL loader, use a custom loader that uses a proc-address function pointer provided through a new function: ImGui_ImplOpenGL3_SetProcAddrFunc"
     },
     "osx-binding": {
       "description": "Make available OSX binding",

@@ -15,6 +15,7 @@ else()
         REF "v${VERSION}"
         SHA512 dbf0ce45dc6fb100c02bb4fda3d95e0bed615ae9d91b269ad6f42b11fb5aa6a22ec7649ac8c96eb260bed454db56e975de33cd6ab55fa8b7e249f9c87b07a90e
         HEAD_REF master
+        PATCHES 001-opengl3-impl-proc-address-loader.patch
     )
 endif()
 
@@ -43,6 +44,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     freetype-lunasvg            IMGUI_FREETYPE_LUNASVG
     wchar32                     IMGUI_USE_WCHAR32
     test-engine                 IMGUI_TEST_ENGINE
+    opengl3-proc-address-loader IMGUI_IMPL_OPENGL_PROC_ADDRESS_LOADER
 )
 
 if ("libigl-imgui" IN_LIST FEATURES)

@@ -1,0 +1,79 @@
+diff --git a/backends/imgui_impl_opengl3.cpp b/backends/imgui_impl_opengl3.cpp
+index 7087a7c5..5d454464 100644
+--- a/backends/imgui_impl_opengl3.cpp
++++ b/backends/imgui_impl_opengl3.cpp
+@@ -663,6 +663,13 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
+     (void)bd; // Not all compilation paths use this
+ }
+ 
++#ifdef IMGUI_IMPL_OPENGL_PROC_ADDRESS_LOADER
++void ImGui_ImplOpenGL3_SetProcAddrFunc(GL3WGetProcAddressProc procAddrFunc)
++{
++    gl_get_proc_address = procAddrFunc;
++}
++#endif
++
+ bool ImGui_ImplOpenGL3_CreateFontsTexture()
+ {
+     ImGuiIO& io = ImGui::GetIO();
+diff --git a/backends/imgui_impl_opengl3.h b/backends/imgui_impl_opengl3.h
+index 54545f95..80f5b591 100644
+--- a/backends/imgui_impl_opengl3.h
++++ b/backends/imgui_impl_opengl3.h
+@@ -35,6 +35,13 @@ IMGUI_IMPL_API void     ImGui_ImplOpenGL3_Shutdown();
+ IMGUI_IMPL_API void     ImGui_ImplOpenGL3_NewFrame();
+ IMGUI_IMPL_API void     ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data);
+ 
++#ifdef IMGUI_IMPL_OPENGL_PROC_ADDRESS_LOADER
++typedef void (*GL3WglProc)(void);
++typedef GL3WglProc (*GL3WGetProcAddressProc)(const char *proc);
++
++IMGUI_IMPL_API void     ImGui_ImplOpenGL3_SetProcAddrFunc(GL3WGetProcAddressProc procAddrFunc);
++#endif
++
+ // (Optional) Called by Init/NewFrame/Shutdown
+ IMGUI_IMPL_API bool     ImGui_ImplOpenGL3_CreateFontsTexture();
+ IMGUI_IMPL_API void     ImGui_ImplOpenGL3_DestroyFontsTexture();
+diff --git a/backends/imgui_impl_opengl3_loader.h b/backends/imgui_impl_opengl3_loader.h
+index 3fbc3481..bd05d3ea 100644
+--- a/backends/imgui_impl_opengl3_loader.h
++++ b/backends/imgui_impl_opengl3_loader.h
+@@ -614,7 +614,7 @@ extern "C" {
+ 
+ #define GL3W_ARRAY_SIZE(x)  (sizeof(x) / sizeof((x)[0]))
+ 
+-#if defined(_WIN32)
++#if defined(_WIN32) && !defined(IMGUI_IMPL_OPENGL_PROC_ADDRESS_LOADER)
+ #ifndef WIN32_LEAN_AND_MEAN
+ #define WIN32_LEAN_AND_MEAN 1
+ #endif
+@@ -662,6 +662,16 @@ static GL3WglProc get_proc(const char *proc)
+     *(void **)(&res) = dlsym(libgl, proc);
+     return res;
+ }
++#elif defined(IMGUI_IMPL_OPENGL_PROC_ADDRESS_LOADER)
++static GL3WGetProcAddressProc gl_get_proc_address;
++
++static GL3WglProc get_proc(const char* proc)
++{
++    if (!gl_get_proc_address)
++        return NULL;
++
++    return gl_get_proc_address(proc);
++}
+ #else
+ #include <dlfcn.h>
+ 
+@@ -809,10 +819,12 @@ static void load_procs(GL3WGetProcAddressProc proc);
+ 
+ int imgl3wInit(void)
+ {
++#if !defined(IMGUI_IMPL_OPENGL_PROC_ADDRESS_LOADER)
+     int res = open_libgl();
+     if (res)
+         return res;
+     atexit(close_libgl);
++#endif
+     return imgl3wInit2(get_proc);
+ }
+ 

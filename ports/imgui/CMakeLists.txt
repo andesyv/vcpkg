@@ -81,6 +81,9 @@ endif()
 
 if(IMGUI_BUILD_OPENGL3_BINDING)
     target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
+    if(IMGUI_IMPL_OPENGL_PROC_ADDRESS_LOADER)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_IMPL_OPENGL_PROC_ADDRESS_LOADER)
+    endif()
 endif()
 
 if(IMGUI_BUILD_OSX_BINDING)

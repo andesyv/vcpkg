@@ -262,27 +262,34 @@ if(VCPKG_TARGET_IS_WINDOWS AND USE_VULKAN_BACKEND)
 endif()
 
 if(VCPKG_TARGET_IS_WINDOWS)
-    append_gn_option(is_clang OFF)
+    string(APPEND GN_CONFIGURE_OPTIONS " is_clang=false")
 else()
     # Force ninja to build using CLang on all unix platforms. Building with GCC seems to fail as only libc++ is
     # being properly linked (and not libstdc++).
-    append_gn_option(is_clang ON)
+    string(APPEND GN_CONFIGURE_OPTIONS " is_clang=true")
 endif()
 
-append_gn_option(build_with_chromium OFF)
-append_gn_option(use_dummy_lastchange ON)
+string(APPEND GN_CONFIGURE_OPTIONS " build_with_chromium=false")
+string(APPEND GN_CONFIGURE_OPTIONS " use_dummy_lastchange=true")
 
-string(APPEND GN_CONFIGURE_OPTIONS " target_cpu=\"${VCPKG_TARGET_ARCHITECTURE}\" angle_build_tests=false")
+string(APPEND GN_CONFIGURE_OPTIONS " target_cpu=\"${VCPKG_TARGET_ARCHITECTURE}\"")
+string(APPEND GN_CONFIGURE_OPTIONS " angle_build_tests=false")
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
-    append_gn_option(is_component_build ON)
+    string(APPEND GN_CONFIGURE_OPTIONS " is_component_build=true")
 else()
-    append_gn_option(is_component_build OFF)
+    string(APPEND GN_CONFIGURE_OPTIONS " is_component_build=false")
 endif()
 
-
+string(STRIP "${GN_CONFIGURE_OPTIONS}" GN_CONFIGURE_OPTIONS)
 set(GN_CONFIGURE_OPTIONS_DEBUG "${GN_CONFIGURE_OPTIONS} is_debug=true")
 set(GN_CONFIGURE_OPTIONS_RELEASE "${GN_CONFIGURE_OPTIONS} is_debug=false")
+
+# By default, frame capture is enabled for all ANGLE builds. This allows one to trace what OpenGL calls were
+# translated to in the backend. While useful in debug builds, it adds some runtime overhead which is usually
+# not desired in release builds.
+string(APPEND GN_CONFIGURE_OPTIONS_RELEASE " angle_has_frame_capture=false")
+
 # We assume all users who wants to use the vulkan backend in debug mode also wants the vulkan validation layers.
 if(USE_VULKAN_BACKEND)
     string(APPEND GN_CONFIGURE_OPTIONS_DEBUG " angle_enable_vulkan_validation_layers=true")

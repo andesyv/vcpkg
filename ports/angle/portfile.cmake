@@ -70,12 +70,13 @@ set(ANGLE_COMMIT_POSITION 23816)
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS feature_options
     FEATURES
-        opengl      USE_OPENGL_BACKEND
-        vulkan      USE_VULKAN_BACKEND
-        direct3d9   USE_D3D9_BACKEND
-        direct3d11  USE_D3D11_BACKEND
-        metal       USE_METAL_BACKEND
-        null        USE_NULL_BACKEND
+        opengl                          USE_OPENGL_BACKEND
+        vulkan                          USE_VULKAN_BACKEND
+        direct3d9                       USE_D3D9_BACKEND
+        direct3d11                      USE_D3D11_BACKEND
+        metal                           USE_METAL_BACKEND
+        null                            USE_NULL_BACKEND
+        optimize-for-single-thread      OPTIMIZE_FOR_SINGLE_THREAD
 )
 
 if(NOT USE_OPENGL_BACKEND AND NOT USE_VULKAN_BACKEND AND NOT USE_D3D9_BACKEND AND NOT USE_D3D11_BACKEND AND NOT USE_METAL_BACKEND AND NOT USE_NULL_BACKEND)
@@ -275,6 +276,10 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
     string(APPEND GN_CONFIGURE_OPTIONS " is_component_build=true")
 else()
     string(APPEND GN_CONFIGURE_OPTIONS " is_component_build=false")
+endif()
+
+if(OPTIMIZE_FOR_SINGLE_THREAD)
+    string(APPEND GN_CONFIGURE_OPTIONS " angle_enable_share_context_lock=false")
 endif()
 
 string(STRIP "${GN_CONFIGURE_OPTIONS}" GN_CONFIGURE_OPTIONS)

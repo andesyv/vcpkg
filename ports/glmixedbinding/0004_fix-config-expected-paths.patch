@@ -1,0 +1,26 @@
+diff --git a/glmixedbinding-config.cmake b/glmixedbinding-config.cmake
+index d067868a..afdcf542 100644
+--- a/glmixedbinding-config.cmake
++++ b/glmixedbinding-config.cmake
+@@ -43,20 +43,11 @@ endmacro()
+ 
+ # Try install location
+ set(MODULE_FOUND FALSE)
+-find_modules("cmake")
++find_modules(".")
+ 
+ if(MODULE_FOUND)
+     return()
+ endif()
+ 
+-# Try common build locations
+-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+-    find_modules("build-debug/cmake")
+-    find_modules("build/cmake")
+-else()
+-    find_modules("build/cmake")
+-    find_modules("build-debug/cmake")
+-endif()
+-
+ # Signal success/failure to CMake
+ set(glmixedbinding_FOUND ${MODULE_FOUND})

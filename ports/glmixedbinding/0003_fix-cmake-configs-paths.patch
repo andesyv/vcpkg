@@ -1,0 +1,62 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b89b970b..e3b3b155 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -171,15 +171,15 @@ endif()
+ if(1)
+     # Install into the system (/usr/bin or /usr/local/bin)
+     set(INSTALL_ROOT      "share/${project}")       # /usr/[local]/share/<project>
+-    set(INSTALL_CMAKE     "share/${project}/cmake") # /usr/[local]/share/<project>/cmake
++    set(INSTALL_CMAKE     "share/${project}") # /usr/[local]/share/<project>/cmake
+     set(INSTALL_EXAMPLES  "share/${project}")       # /usr/[local]/share/<project>
+     set(INSTALL_DATA      "share/${project}")       # /usr/[local]/share/<project>
+     set(INSTALL_BIN       "bin")                    # /usr/[local]/bin
+     set(INSTALL_SHARED    "lib")                    # /usr/[local]/lib
+     set(INSTALL_LIB       "lib")                    # /usr/[local]/lib
+     set(INSTALL_INCLUDE   "include")                # /usr/[local]/include
+-    set(INSTALL_DOC       "share/doc/${project}")   # /usr/[local]/share/doc/<project>
+-    set(INSTALL_SHORTCUTS "share/applications")     # /usr/[local]/share/applications
++    set(INSTALL_DOC       "share/${project}/doc")   # /usr/[local]/share/doc/<project>
++    set(INSTALL_SHORTCUTS "share/${project}/applications")     # /usr/[local]/share/applications
+     set(INSTALL_ICONS     "share/pixmaps")          # /usr/[local]/share/pixmaps
+     set(INSTALL_INIT      "etc/init")              # /etc/init (upstart init scripts)
+ else()
+diff --git a/source/3rdparty/KHR/CMakeLists.txt b/source/3rdparty/KHR/CMakeLists.txt
+index 869066a9..d041df49 100644
+--- a/source/3rdparty/KHR/CMakeLists.txt
++++ b/source/3rdparty/KHR/CMakeLists.txt
+@@ -43,7 +43,7 @@ add_library(${target} INTERFACE)
+ add_library(externals::${target} ALIAS ${target})
+ 
+ # Export library for downstream projects
+-export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/cmake/${target}/${target}-export.cmake)
++export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/${target}-export.cmake)
+ 
+ 
+ #
+diff --git a/source/glmixedbinding-aux/CMakeLists.txt b/source/glmixedbinding-aux/CMakeLists.txt
+index abfad94a..17e9ba94 100644
+--- a/source/glmixedbinding-aux/CMakeLists.txt
++++ b/source/glmixedbinding-aux/CMakeLists.txt
+@@ -149,7 +149,7 @@ endif()
+ add_library(${META_PROJECT_NAME}::${target} ALIAS ${target})
+ 
+ # Export library for downstream projects
+-export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/cmake/${target}/${target}-export.cmake)
++export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/${target}-export.cmake)
+ 
+ # Create API export header
+ generate_export_header(${target}
+diff --git a/source/glmixedbinding/CMakeLists.txt b/source/glmixedbinding/CMakeLists.txt
+index 191c84c3..95f15bf0 100644
+--- a/source/glmixedbinding/CMakeLists.txt
++++ b/source/glmixedbinding/CMakeLists.txt
+@@ -191,7 +191,7 @@ endif()
+ add_library(${META_PROJECT_NAME}::${target} ALIAS ${target})
+ 
+ # Export library for downstream projects
+-export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/cmake/${target}/${target}-export.cmake)
++export(TARGETS ${target} NAMESPACE ${META_PROJECT_NAME}:: FILE ${PROJECT_BINARY_DIR}/${target}-export.cmake)
+ 
+ # Create API export header
+ generate_export_header(${target}

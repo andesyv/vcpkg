@@ -1,0 +1,4 @@
+The package glmixedbinding:@TARGET_TRIPLET@ provides CMake targets:
+
+    find_package(glmixedbinding CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glmixedbinding::glmixedbinding glmixedbinding::glmixedbinding-aux)

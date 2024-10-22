@@ -1,0 +1,38 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2835b30a..b89b970b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -111,6 +111,7 @@ endif ()
+ project(${META_PROJECT_NAME} C CXX)
+ 
+ # Get git revision
++if(NOT DEFINED GIT_REV)
+ if (OPTION_USE_GIT_INFORMATION AND GLMIXEDBINDING_BUILD_AS_ROOT)
+   get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+   string(SUBSTRING "${GIT_SHA1}" 0 12 GIT_REV)
+@@ -121,6 +122,7 @@ else()
+   set(GIT_SHA1 "")
+   set(GIT_REV "0")
+ endif()
++endif()
+ 
+ # Set output directories
+ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+@@ -166,7 +168,7 @@ if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr" OR "${CMAKE_INSTALL_PREFIX}" STREQU
+ endif()
+ 
+ # Installation paths
+-if(UNIX AND SYSTEM_DIR_INSTALL)
++if(1)
+     # Install into the system (/usr/bin or /usr/local/bin)
+     set(INSTALL_ROOT      "share/${project}")       # /usr/[local]/share/<project>
+     set(INSTALL_CMAKE     "share/${project}/cmake") # /usr/[local]/share/<project>/cmake
+@@ -179,7 +181,7 @@ if(UNIX AND SYSTEM_DIR_INSTALL)
+     set(INSTALL_DOC       "share/doc/${project}")   # /usr/[local]/share/doc/<project>
+     set(INSTALL_SHORTCUTS "share/applications")     # /usr/[local]/share/applications
+     set(INSTALL_ICONS     "share/pixmaps")          # /usr/[local]/share/pixmaps
+-    set(INSTALL_INIT      "/etc/init")              # /etc/init (upstart init scripts)
++    set(INSTALL_INIT      "etc/init")              # /etc/init (upstart init scripts)
+ else()
+     # Install into local directory
+     set(INSTALL_ROOT      ".")                      # ./

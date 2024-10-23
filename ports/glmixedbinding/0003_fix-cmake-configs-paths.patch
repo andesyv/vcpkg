@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b89b970b..e3b3b155 100644
+index 4a0f7a09..0d54306d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -171,15 +171,15 @@ endif()
@@ -21,6 +21,19 @@ index b89b970b..e3b3b155 100644
      set(INSTALL_ICONS     "share/pixmaps")          # /usr/[local]/share/pixmaps
      set(INSTALL_INIT      "etc/init")              # /etc/init (upstart init scripts)
  else()
+diff --git a/glmixedbinding-config.cmake b/glmixedbinding-config.cmake
+index d067868a..2a4d0d5d 100644
+--- a/glmixedbinding-config.cmake
++++ b/glmixedbinding-config.cmake
+@@ -9,7 +9,7 @@ include(CMakeFindDependencyMacro)
+ if (NOT TARGET "KHR::KHR")
+     # prepend to current CMAKE_MODULE_PATH
+     # original command: list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+-    set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake;${CMAKE_MODULE_PATH}")
++    set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR};${CMAKE_MODULE_PATH}")
+     find_package(KHR QUIET)
+ endif ()
+ 
 diff --git a/source/3rdparty/KHR/CMakeLists.txt b/source/3rdparty/KHR/CMakeLists.txt
 index 869066a9..d041df49 100644
 --- a/source/3rdparty/KHR/CMakeLists.txt

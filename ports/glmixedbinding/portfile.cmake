@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO andesyv/glmixedbinding
-    REF master
-    SHA512 185daac076de66e91722d5912b2805aa5e0211f33f4fd1a85bd797f384fa9e75ac334378486802107ede469b566aea3e8ef4d9052046c7df41ba007dd45ac712
+    REF 145e87a73d77c38aee6a78e86b4bc39af74028ab
+    SHA512 da336cc06b2518b86607d0e7983a2bb8eedbac89ea8258629e7bd9b1ea620a859292911fb8eeb760e9f717a675daa4e0e440653961d9b7189017026dfcec9cc6
     PATCHES
         0001_force-system-install.patch
         0003_fix-cmake-configs-paths.patch

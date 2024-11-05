@@ -5,6 +5,13 @@ function(checkout_in_path PATH URL REF PATCHES)
             return()
         endif()
         file(REMOVE_RECURSE "${PATH}")
+    elseif(NOT "${PATH}" STREQUAL "")
+        debug_message("Creating directory ${PATH}...")
+        # Make directory to ensure that the parent folders exists
+        cmake_path(GET "${PATH}" PARENT_PATH PARENT)
+        if(NOT EXISTS "${PARENT}")
+            file(MAKE_DIRECTORY "${PARENT}")
+        endif()
     endif()
 
     vcpkg_from_git(
@@ -198,4 +205,86 @@ function(verify_windows_sdk)
             debug_message("Found Windows SDK debugging tools: ${_dbghelp_dll_path}")
         endif()
     endif()
+endfunction()
+
+function(find_patches)
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "REL_PATH;OUT_VAR" "PATCHES")
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unparsed arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+
+    cmake_policy(SET CMP0140 NEW)
+
+    foreach(patch IN LISTS arg_PATCHES)
+        string(REPLACE "=" ";" patch "${patch}")
+        list(GET patch 0 patch_name)
+        if("${arg_REL_PATH}" STREQUAL "${patch_name}")
+            list(GET patch 1 patch_path)
+            set(${arg_OUT_VAR} "${patch_path}")
+            return(PROPAGATE ${arg_OUT_VAR})
+        endif()
+    endforeach()
+
+    unset(${arg_OUT_VAR})
+    return(PROPAGATE ${arg_OUT_VAR})
+endfunction()
+
+function(parse_deps)
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "DEPS_FILE;VARIABLES_FILE" "PATCHES")
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unparsed arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+
+    message(STATUS "Checking out dependencies in  ${arg_DEPS_FILE}...")
+
+    if("${arg_VARIABLES_FILE}" STREQUAL "")
+        set(arg_VARIABLES_FILE "${CURRENT_BUILDTREES_DIR}/DEPS-parsed-variables-${TARGET_TRIPLET}.json")
+    endif()
+
+    vcpkg_find_acquire_program(PYTHON3)
+
+    vcpkg_execute_required_process(
+        COMMAND "${PYTHON3}" "${CMAKE_CURRENT_LIST_DIR}/parse-deps.py" "${arg_DEPS_FILE}" "--variables-file" "${arg_VARIABLES_FILE}"
+        WORKING_DIRECTORY "${SOURCE_PATH}"
+        LOGNAME "parse-deps-${TARGET_TRIPLET}"
+    )
+
+    file(READ "${CURRENT_BUILDTREES_DIR}/parse-deps-${TARGET_TRIPLET}-out.log" json_dependencies)
+    string(JSON json_dependencies_len LENGTH "${json_dependencies}")
+    # message(FATAL_ERROR "json_dependencies_len: ${json_dependencies_len}")
+    set(index 0)
+    while(index LESS json_dependencies_len)
+        string(JSON json_dependency GET "${json_dependencies}" "${index}")
+        
+        string(JSON rel_path GET "${json_dependency}" "dir")
+        string(JSON url GET "${json_dependency}" "url")
+        string(JSON ref GET "${json_dependency}" "ref")
+        # message(STATUS "Fetching ${rel_path} from ${url}@${ref}...")
+
+        find_patches(
+            REL_PATH ${rel_path}
+            OUT_VAR patches
+            PATCHES ${arg_PATCHES}
+        )
+
+        debug_message("Checking out ${SOURCE_PATH}/${rel_path} using repo ${url}@${ref} with patches: ${patches}")
+        checkout_in_path("${SOURCE_PATH}/${rel_path}" "${url}" "${ref}" "${patches}")
+
+        math(EXPR index "${index} + 1")
+
+        # After checking out the path, recursively fetch dependencies in that path as well
+        if(NOT EXISTS "${SOURCE_PATH}/${rel_path}/DEPS" OR IS_DIRECTORY "${SOURCE_PATH}/${rel_path}/DEPS")
+            continue()
+        endif()
+
+        parse_deps(
+            DEPS_FILE "${SOURCE_PATH}/${rel_path}/DEPS"
+            VARIABLES_FILE "${arg_VARIABLES_FILE}"
+        )
+    endwhile()
+    # set(deps "")
+    # foreach(dep IN LISTS arg_DEPS)
+    #     list(APPEND deps "${dep}")
+    # endforeach()
+    # set(deps "${deps}" PARENT_SCOPE)
 endfunction()

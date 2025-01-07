@@ -1,6 +1,6 @@
 {
   "name": "glmixedbinding",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "glmixedbinding is a MIT licensed, experimental, cross-platform C++ binding for the OpenGL and OpenGL ES APIs",
   "homepage": "https://github.com/andesyv/glmixedbinding",
   "license": "MIT",

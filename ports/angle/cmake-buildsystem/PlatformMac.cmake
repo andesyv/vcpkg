@@ -17,7 +17,7 @@ list(APPEND ANGLEGLESv2_LIBRARIES
 # Metal backend
 if(USE_METAL)
     list(APPEND ANGLE_SOURCES
-        ${_metal_backend_sources}
+        ${metal_backend_sources}
 
         ${angle_translator_lib_metal_sources}
     
@@ -46,7 +46,7 @@ endif()
 
 if(USE_ANGLE_EGL OR ENABLE_WEBGL)
     list(APPEND ANGLE_SOURCES
-        ${_gl_backend_sources}
+        ${gl_backend_sources}
 
         ${libangle_gl_egl_dl_sources}
         ${libangle_gl_egl_sources}

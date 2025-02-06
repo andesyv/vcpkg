@@ -116,9 +116,27 @@ include(Compiler.cmake)
 include(GLESv2.cmake)
 
 # ANGLE Renderer backends
+# VCPKG EDIT: Modifed block
+if (use_direct3d9_renderer OR use_direct3d11_renderer)
 include(D3D.cmake)
+endif()
+
+if (use_opengl_renderer OR use_opengles_renderer)
 include(GL.cmake)
+endif ()
+
+if (use_metal_renderer)
 include(Metal.cmake)
+endif ()
+
+if (use_vulkan_renderer)
+include(Vulkan.cmake)
+endif ()
+
+if (use_null_renderer)
+include(Null.cmake)
+endif ()
+# VCPKG EDIT: end vcpkg modified block
 
 set(no_gl_prototypes
     GL_GLES_PROTOTYPES=0

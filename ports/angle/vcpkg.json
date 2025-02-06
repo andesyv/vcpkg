@@ -23,34 +23,41 @@
       "platform": "linux"
     },
     {
-      "name": "vcpkg-gn",
-      "host": true
-    },
-    {
       "name": "vcpkg-cmake-config",
       "host": true
     },
     {
       "name": "vcpkg-get-python-packages",
       "host": true
+    },
+    {
+      "name": "vcpkg-gn",
+      "host": true
     }
   ],
+  "default-features": [
+    {
+      "name": "direct3d11",
+      "platform": "windows"
+    },
+    {
+      "name": "direct3d9",
+      "platform": "windows & !uwp"
+    },
+    {
+      "name": "metal",
+      "platform": "osx"
+    },
+    "opengl",
+    "opengles"
+  ],
   "features": {
-    "opengl": {
-      "description": "Enable the OpenGL backend renderer (EGL_ANGLE_platform_angle_opengl)"
-    },
-    "opengles": {
-      "description": "Enable the OpenGL ES backend renderer (EGL_ANGLE_platform_angle_opengl)"
-    },
-    "vulkan": {
-      "description": "Enable the Vulkan backend renderer (EGL_ANGLE_platform_angle_vulkan)"
+    "direct3d11": {
+      "description": "Enable the Direct3D 11 backend renderer (EGL_ANGLE_platform_angle_d3d)",
+      "supports": "!osx"
     },
     "direct3d9": {
       "description": "Enable the Direct3D 9 backend renderer (EGL_ANGLE_platform_angle_d3d)",
-      "supports": "!osx"
-    },
-    "direct3d11": {
-      "description": "Enable the Direct3D 11 backend renderer (EGL_ANGLE_platform_angle_d3d)",
       "supports": "!osx"
     },
     "metal": {
@@ -59,22 +66,15 @@
     },
     "null": {
       "description": "Enable the null renderer which performs state tracking and validation but does not render any content (EGL_ANGLE_platform_angle_null)"
-    }
-  },
-  "default-features": [
-    "opengl",
-    "opengles",
-    {
-      "name": "direct3d9",
-      "platform": "windows & !uwp"
     },
-    {
-      "name": "direct3d11",
-      "platform": "windows"
+    "opengl": {
+      "description": "Enable the OpenGL backend renderer (EGL_ANGLE_platform_angle_opengl)"
     },
-    {
-      "name": "metal",
-      "platform": "osx"
+    "opengles": {
+      "description": "Enable the OpenGL ES backend renderer (EGL_ANGLE_platform_angle_opengl)"
+    },
+    "vulkan": {
+      "description": "Enable the Vulkan backend renderer (EGL_ANGLE_platform_angle_vulkan)"
     }
-  ]
+  }
 }

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "diligent-core",
+  "version-semver": "2.5.6",
+  "description": "A modern cross-platform low-level graphics API",
+  "homepage": "http://diligentgraphics.com/diligent-engine/",
+  "license": "Apache-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ],
+  "default-features": [
+    {
+      "name": "d3d11",
+      "platform": "windows"
+    },
+    {
+      "name": "d3d12",
+      "platform": "windows"
+    },
+    "gl",
+    {
+      "name": "metal",
+      "platform": "osx"
+    },
+    "vulkan",
+    "webgpu"
+  ],
+  "features": {
+    "d3d11": {
+      "description": "Enable the Direct3D 11 backend",
+      "supports": "windows"
+    },
+    "d3d12": {
+      "description": "Enable the Direct3D 12 backend",
+      "supports": "windows"
+    },
+    "gl": {
+      "description": "Enable the OpenGL / GLES backend"
+    },
+    "metal": {
+      "description": "Enable the Metal backend",
+      "supports": "osx"
+    },
+    "vulkan": {
+      "description": "Enable the Vulkan backend"
+    },
+    "webgpu": {
+      "description": "Enable the WebGPU backend"
+    }
+  }
+}

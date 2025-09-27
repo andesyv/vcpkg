@@ -1,0 +1,13 @@
+diff --git a/Graphics/GraphicsEngineOpenGL/src/RenderDeviceGLImpl.cpp b/Graphics/GraphicsEngineOpenGL/src/RenderDeviceGLImpl.cpp
+index 406c8f28e..1a2052537 100644
+--- a/Graphics/GraphicsEngineOpenGL/src/RenderDeviceGLImpl.cpp
++++ b/Graphics/GraphicsEngineOpenGL/src/RenderDeviceGLImpl.cpp
+@@ -668,7 +668,7 @@ void RenderDeviceGLImpl::InitAdapterInfo()
+ 
+     // Set graphics adapter properties
+     {
+-        std::basic_string<GLubyte> glstrVendor = glGetString(GL_VENDOR);
++        std::string                glstrVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+         std::string                Vendor      = StrToLower(std::string(glstrVendor.begin(), glstrVendor.end()));
+         LOG_INFO_MESSAGE("GPU Vendor: ", Vendor);
+ 

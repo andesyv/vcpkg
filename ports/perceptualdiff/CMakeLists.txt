@@ -1,0 +1,83 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(perceptualdiff)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(NOT MSVC)
+    add_compile_options(
+        -Wall -Wextra -pedantic -Wcast-qual -Wpointer-arith -Winit-self
+        -Wswitch-default -Wmissing-include-dirs -Wold-style-cast
+        -Wnon-virtual-dtor -Wshadow -Wno-unknown-pragmas)
+endif()
+
+# Not used as of now
+# option(USE_OPENMP "Use OpenMP" FALSE)
+# if(USE_OPENMP)
+#     find_package(OpenMP CONFIG REQUIED)
+#     add_compile_options(${OpenMP_CXX_FLAGS})
+#     if(NOT MSVC)
+#         set(CMAKE_EXE_LINKER_FLAGS
+#             "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+#     endif()
+# endif()
+
+# option(SANITIZERS "Enable sanitizers" FALSE)
+# if(SANITIZERS)
+#     add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+#     set(CMAKE_EXE_LINKER_FLAGS
+#         "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
+# endif()
+
+find_package(FreeImage CONFIG REQUIRED)
+
+add_library(pdiff lpyramid.cpp rgba_image.cpp metric.cpp)
+target_link_libraries(pdiff PUBLIC freeimage::FreeImage)
+
+# option(BUILD_EXECUTABLE "Build executable" FALSE)
+# if(BUILD_EXECUTABLE)
+#     add_executable(perceptualdiff compare_args.cpp perceptualdiff.cpp)
+#     target_link_libraries(perceptualdiff PRIVATE pdiff)
+# endif()
+
+
+# Create install targets
+include(GNUInstallDirs)
+
+install(TARGETS pdiff
+    EXPORT "${PROJECT_NAME}Targets"
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT "${PROJECT_NAME}Targets"
+    FILE "${PROJECT_NAME}Targets.cmake"
+    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}"
+)
+
+install(FILES lpyramid.h rgba_image.h metric.h exceptions.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
+install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}")
+
+
+# Create package config
+include(CMakePackageConfigHelpers)
+
+set(version @VERSION@)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    VERSION "${version}"
+    COMPATIBILITY AnyNewerVersion
+)
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}"
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}"
+)

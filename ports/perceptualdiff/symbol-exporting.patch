@@ -1,3 +1,24 @@
+diff --git a/compare_args.h b/compare_args.h
+index 12e70cf..95b3830 100644
+--- a/compare_args.h
++++ b/compare_args.h
+@@ -20,6 +20,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
+ #ifndef PERCEPTUALDIFF_COMPARE_ARGS_H
+ #define PERCEPTUALDIFF_COMPARE_ARGS_H
+ 
++#include "pdiff_export.h"
+ #include "exceptions.h"
+ #include "metric.h"
+ 
+@@ -31,7 +32,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
+ namespace pdiff
+ {
+     // Arguments to pass into the comparison function.
+-    class CompareArgs
++    class PDIFF_EXPORT CompareArgs
+     {
+     public:
+ 
 diff --git a/lpyramid.h b/lpyramid.h
 index a4ea251..20d42ad 100644
 --- a/lpyramid.h
@@ -21,7 +42,7 @@ index a4ea251..20d42ad 100644
      public:
  
 diff --git a/metric.h b/metric.h
-index 7328832..8a6a3f3 100644
+index 7328832..6cf640f 100644
 --- a/metric.h
 +++ b/metric.h
 @@ -20,6 +20,8 @@ Place, Suite 330, Boston, MA 02111-1307 USA
@@ -42,8 +63,17 @@ index 7328832..8a6a3f3 100644
      {
          PerceptualDiffParameters();
  
+@@ -60,7 +62,7 @@ namespace pdiff
+     // Journal of Graphics Tools 2004
+     //
+     // Return true if the images are perceptually the same.
+-    bool yee_compare(
++    bool PDIFF_EXPORT yee_compare(
+         const RGBAImage &image_a,
+         const RGBAImage &image_b,
+         const PerceptualDiffParameters &parameters=PerceptualDiffParameters(),
 diff --git a/rgba_image.h b/rgba_image.h
-index 4c62198..5e1737b 100644
+index 4c62198..31005d5 100644
 --- a/rgba_image.h
 +++ b/rgba_image.h
 @@ -20,6 +20,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
@@ -63,3 +93,12 @@ index 4c62198..5e1737b 100644
      {
      public:
  
+@@ -135,7 +136,7 @@ namespace pdiff
+     };
+ 
+ 
+-    std::shared_ptr<RGBAImage> read_from_file(const std::string &filename);
++    std::shared_ptr<RGBAImage> PDIFF_EXPORT read_from_file(const std::string &filename);
+ 
+ 
+     class RGBImageException : public virtual PerceptualDiffException

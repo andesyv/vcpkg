@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 
 project(perceptualdiff)
 
@@ -13,7 +13,7 @@ if(NOT MSVC)
         -Wnon-virtual-dtor -Wshadow -Wno-unknown-pragmas)
 endif()
 
-# Not used as of now
+# The library supports OpenMP, but support for this has not been enabled in this port for now
 # option(USE_OPENMP "Use OpenMP" FALSE)
 # if(USE_OPENMP)
 #     find_package(OpenMP CONFIG REQUIED)
@@ -32,20 +32,26 @@ endif()
 # endif()
 
 find_package(FreeImage CONFIG REQUIRED)
-
-add_library(pdiff lpyramid.cpp rgba_image.cpp metric.cpp)
-target_link_libraries(pdiff PUBLIC freeimage::FreeImage)
-
-# option(BUILD_EXECUTABLE "Build executable" FALSE)
-# if(BUILD_EXECUTABLE)
-#     add_executable(perceptualdiff compare_args.cpp perceptualdiff.cpp)
-#     target_link_libraries(perceptualdiff PRIVATE pdiff)
-# endif()
-
-
-# Create install targets
 include(GNUInstallDirs)
 
+
+# Executable with 
+add_library(pdiff lpyramid.cpp rgba_image.cpp metric.cpp)
+target_link_libraries(pdiff PUBLIC freeimage::FreeImage)
+include(GenerateExportHeader)
+generate_export_header(pdiff)
+target_include_directories(pdiff PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+list(APPEND PUBLIC_HEADERS
+    lpyramid.h
+    rgba_image.h
+    metric.h
+    exceptions.h
+    ${CMAKE_CURRENT_BINARY_DIR}/pdiff_export.h
+)
 install(TARGETS pdiff
     EXPORT "${PROJECT_NAME}Targets"
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -53,31 +59,29 @@ install(TARGETS pdiff
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+install(FILES ${PUBLIC_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
 
+
+# Install cmake exportable targets, package configuration and dist files
+set(PACKAGE_CONFIG_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}")
 install(EXPORT "${PROJECT_NAME}Targets"
     FILE "${PROJECT_NAME}Targets.cmake"
-    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}"
+    DESTINATION "${PACKAGE_CONFIG_DIR}"
+    NAMESPACE ${PROJECT_NAME}::
 )
-
-install(FILES lpyramid.h rgba_image.h metric.h exceptions.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
 install(FILES LICENSE DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}")
-
-
-# Create package config
 include(CMakePackageConfigHelpers)
-
-set(version @VERSION@)
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    VERSION "${version}"
+    VERSION "@VERSION@"
     COMPATIBILITY AnyNewerVersion
 )
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}"
+    INSTALL_DESTINATION "${PACKAGE_CONFIG_DIR}"
 )
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}"
+    DESTINATION "${PACKAGE_CONFIG_DIR}"
 )

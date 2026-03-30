@@ -4,6 +4,8 @@ vcpkg_from_github(
     HEAD_REF master
     REF 5850a7a2c0425ab6a2b740aec5466f842c3f5657
     SHA512 cef2aa55e079f86512d936ddc3d54e6f67368c011e06d27b84ded8d37c739b311da378e20dbb5f79be9758d2df76bdc4443d497b2d7cad9628f275ac0ff1617d
+    PATCHES
+      symbol-exporting.patch
 )
 
 # Override CMakeLists.txt and package config file

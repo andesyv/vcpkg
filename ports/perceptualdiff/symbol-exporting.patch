@@ -1,0 +1,65 @@
+diff --git a/lpyramid.h b/lpyramid.h
+index a4ea251..20d42ad 100644
+--- a/lpyramid.h
++++ b/lpyramid.h
+@@ -20,6 +20,8 @@ Place, Suite 330, Boston, MA 02111-1307 USA
+ #ifndef PERCEPTUALDIFF_LPYRAMID_H
+ #define PERCEPTUALDIFF_LPYRAMID_H
+ 
++#include "pdiff_export.h"
++
+ #include <vector>
+ 
+ 
+@@ -31,7 +33,7 @@ namespace pdiff
+ #define MAX_PYR_LEVELS 8u
+ #endif
+ 
+-    class LPyramid
++    class PDIFF_EXPORT LPyramid
+     {
+     public:
+ 
+diff --git a/metric.h b/metric.h
+index 7328832..8a6a3f3 100644
+--- a/metric.h
++++ b/metric.h
+@@ -20,6 +20,8 @@ Place, Suite 330, Boston, MA 02111-1307 USA
+ #ifndef PERCEPTUALDIFF_METRIC_H
+ #define PERCEPTUALDIFF_METRIC_H
+ 
++#include "pdiff_export.h"
++
+ #include <cstdint>
+ #include <ostream>
+ #include <string>
+@@ -30,7 +32,7 @@ namespace pdiff
+     class RGBAImage;
+ 
+ 
+-    struct PerceptualDiffParameters
++    struct PDIFF_EXPORT PerceptualDiffParameters
+     {
+         PerceptualDiffParameters();
+ 
+diff --git a/rgba_image.h b/rgba_image.h
+index 4c62198..5e1737b 100644
+--- a/rgba_image.h
++++ b/rgba_image.h
+@@ -20,6 +20,7 @@ Place, Suite 330, Boston, MA 02111-1307 USA
+ #ifndef PERCEPTUALDIFF_RGBA_IMAGE_H
+ #define PERCEPTUALDIFF_RGBA_IMAGE_H
+ 
++#include "pdiff_export.h"
+ #include "exceptions.h"
+ 
+ #include <memory>
+@@ -39,7 +40,7 @@ namespace pdiff
+      * http://partners.adobe.com/asn/developer/PDFS/TN/TIFF6.pdf
+      *
+      */
+-    class RGBAImage
++    class PDIFF_EXPORT RGBAImage
+     {
+     public:
+ 
